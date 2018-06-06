@@ -15,30 +15,51 @@
     </style>
 
     <script typeof="text/javascript">
+        var imageList = null;
+        var imageListIndex = 0;
 
-        var selectedFile = "Bestand-AAArC-DIA000001-1-SFB389-A6-T03024-0-F-03bx01x01.jpg";
+        function updateDisplayedImage() {
 
-        function loadJSON(callback) {
+            var selectedFile = imageList[imageListIndex];
 
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
             xobj.open('GET', './output/' + selectedFile + '.neighbours.json', true); // Replace 'my_data' with the path to your file
             xobj.onreadystatechange = function () {
+
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    callback(xobj.responseText);
+                    var json_data = JSON.parse(xobj.responseText)
+                    var main_image_element = document.querySelector('#main-image');
+
+                    setImage(json_data['file_name'], main_image_element);
+
+                    for(var index in json_data['neighbours']){
+                        var neighbour = json_data['neighbours'][index];
+                        var neighbour_element = document.querySelector('#neighbour-' + index);
+
+                        setImage(neighbour['file_name'], neighbour_element)
+                    }
                 }
             };
             xobj.send(null);
         }
 
-        function getEntityData(image_name, element, callback) {
+        function setImage(image_name, element) {
             var xobj = new XMLHttpRequest();
             xobj.open('GET', 'https://arachne.dainst.org/data/search?q=' + image_name)
             xobj.onreadystatechange = function () {
                 if (xobj.readyState == 4 && xobj.status == "200") {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    callback(element, xobj.responseText);
+                    var search_json = JSON.parse(xobj.responseText);
+
+                    if(!search_json['entities']){
+                        return
+                    }
+
+                    setImageSrc(
+                        element,
+                        "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
+                    );
                 }
             };
             xobj.send(null);
@@ -62,44 +83,28 @@
 
                     // This works!!!
                     var b64=btoa(raw);
-                    var dataURL="data:image/jpeg;base64,"+b64;
-                    element.src = dataURL
+
+                    element.src = "data:image/jpeg;base64,"+b64;
                 }
             };
             xobj.send(null);
         }
 
         function init() {
-            loadJSON(function (response) {
-                var json_data = JSON.parse(response);
-                var main_image_element = document.querySelector('#main-image');
 
-                getEntityData(json_data['file_name'], main_image_element, function(element, entity_data){
-                    var search_json = JSON.parse(entity_data);
-                    setImageSrc(
-                        main_image_element,
-                        "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
-                    );
-                });
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', './output/images_list.json', true); // Replace 'my_data' with the path to your file
+            xobj.onreadystatechange = function () {
 
-                for(var index in json_data['neighbours']){
-                    var neighbour = json_data['neighbours'][index];
-                    var neighbour_element = document.querySelector('#neighbour-' + index);
-
-                    console.dir(neighbour_element)
-
-                    getEntityData(neighbour['file_name'], neighbour_element, function(element, entity_data){
-                        var search_json = JSON.parse(entity_data);
-                        setImageSrc(
-                            element,
-                            "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
-                        );
-                    });
+                if (xobj.readyState === 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    imageList = JSON.parse(xobj.responseText);
+                    updateDisplayedImage()
                 }
-            })
+            };
+            xobj.send(null);
         }
-
-
 
         init()
     </script>
@@ -109,30 +114,32 @@
 <body>
 
 <div>
-<img id="main-image">
+    <img id="main-image" src="">
 </div>
 
-<img class="neighbour" id="neighbour-1">
-<img class="neighbour" id="neighbour-2">
-<img class="neighbour" id="neighbour-3">
-<img class="neighbour" id="neighbour-4">
-<img class="neighbour" id="neighbour-5">
-<img class="neighbour" id="neighbour-6">
-<img class="neighbour" id="neighbour-7">
-<img class="neighbour" id="neighbour-8">
-<img class="neighbour" id="neighbour-9">
-<img class="neighbour" id="neighbour-10">
-<img class="neighbour" id="neighbour-11">
-<img class="neighbour" id="neighbour-12">
-<img class="neighbour" id="neighbour-13">
-<img class="neighbour" id="neighbour-14">
-<img class="neighbour" id="neighbour-15">
-<img class="neighbour" id="neighbour-16">
-<img class="neighbour" id="neighbour-17">
-<img class="neighbour" id="neighbour-18">
-<img class="neighbour" id="neighbour-19">
-<img class="neighbour" id="neighbour-20">
+<div>
 
+    <img class="neighbour" id="neighbour-0" src="">
+    <img class="neighbour" id="neighbour-1" src="">
+    <img class="neighbour" id="neighbour-2" src="">
+    <img class="neighbour" id="neighbour-3" src="">
+    <img class="neighbour" id="neighbour-4" src="">
+    <img class="neighbour" id="neighbour-5" src="">
+    <img class="neighbour" id="neighbour-6" src="">
+    <img class="neighbour" id="neighbour-7" src="">
+    <img class="neighbour" id="neighbour-8" src="">
+    <img class="neighbour" id="neighbour-9" src="">
+    <img class="neighbour" id="neighbour-10" src="">
+    <img class="neighbour" id="neighbour-11" src="">
+    <img class="neighbour" id="neighbour-12" src="">
+    <img class="neighbour" id="neighbour-13" src="">
+    <img class="neighbour" id="neighbour-14" src="">
+    <img class="neighbour" id="neighbour-15" src="">
+    <img class="neighbour" id="neighbour-16" src="">
+    <img class="neighbour" id="neighbour-17" src="">
+    <img class="neighbour" id="neighbour-18" src="">
+    <img class="neighbour" id="neighbour-19" src="">
+</div>
 
 </body>
 
