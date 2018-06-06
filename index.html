@@ -106,12 +106,20 @@
             xobj.send(null);
         }
 
+        function setRandomImage(){
+            imageListIndex = Math.floor(Math.random()*imageList.length);
+            updateDisplayedImage()
+        }
         init()
     </script>
 
 </head>
 
 <body>
+
+<div>
+    <button onclick="setRandomImage()">Random</button>
+</div>
 
 <div>
     <img id="main-image" src="">
