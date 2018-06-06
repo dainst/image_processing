@@ -1,0 +1,139 @@
+<html>
+
+<head>
+
+    <style>
+        #main-image {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 10px;
+        }
+        .neighbour {
+            width: 200px;
+        }
+    </style>
+
+    <script typeof="text/javascript">
+
+        var selectedFile = "Bestand-AAArC-DIA000001-1-SFB389-A6-T03024-0-F-03bx01x01.jpg";
+
+        function loadJSON(callback) {
+
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', './output/' + selectedFile + '.neighbours.json', true); // Replace 'my_data' with the path to your file
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+
+        function getEntityData(image_name, element, callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.open('GET', 'https://arachne.dainst.org/data/search?q=' + image_name)
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(element, xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+
+        function setImageSrc(element, src){
+            var xobj = new XMLHttpRequest();
+            xobj.open('GET', src);
+            xobj.setRequestHeader("Accept", "image/*");
+            xobj.responseType = 'arraybuffer';
+
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+
+                    var arr = new Uint8Array( xobj.response);
+                    // Convert the int array to a binary string
+                    // We have to use apply() as we are converting an *array*
+                    // and String.fromCharCode() takes one or more single values, not
+                    // an array.
+                    var raw = String.fromCharCode.apply(null,arr);
+
+                    // This works!!!
+                    var b64=btoa(raw);
+                    var dataURL="data:image/jpeg;base64,"+b64;
+                    element.src = dataURL
+                }
+            };
+            xobj.send(null);
+        }
+
+        function init() {
+            loadJSON(function (response) {
+                var json_data = JSON.parse(response);
+                var main_image_element = document.querySelector('#main-image');
+
+                getEntityData(json_data['file_name'], main_image_element, function(element, entity_data){
+                    var search_json = JSON.parse(entity_data);
+                    setImageSrc(
+                        main_image_element,
+                        "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
+                    );
+                });
+
+                for(var index in json_data['neighbours']){
+                    var neighbour = json_data['neighbours'][index];
+                    var neighbour_element = document.querySelector('#neighbour-' + index);
+
+                    console.dir(neighbour_element)
+
+                    getEntityData(neighbour['file_name'], neighbour_element, function(element, entity_data){
+                        var search_json = JSON.parse(entity_data);
+                        setImageSrc(
+                            element,
+                            "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
+                        );
+                    });
+                }
+            })
+        }
+
+
+
+        init()
+    </script>
+
+</head>
+
+<body>
+
+<div>
+<img id="main-image">
+</div>
+
+<img class="neighbour" id="neighbour-1">
+<img class="neighbour" id="neighbour-2">
+<img class="neighbour" id="neighbour-3">
+<img class="neighbour" id="neighbour-4">
+<img class="neighbour" id="neighbour-5">
+<img class="neighbour" id="neighbour-6">
+<img class="neighbour" id="neighbour-7">
+<img class="neighbour" id="neighbour-8">
+<img class="neighbour" id="neighbour-9">
+<img class="neighbour" id="neighbour-10">
+<img class="neighbour" id="neighbour-11">
+<img class="neighbour" id="neighbour-12">
+<img class="neighbour" id="neighbour-13">
+<img class="neighbour" id="neighbour-14">
+<img class="neighbour" id="neighbour-15">
+<img class="neighbour" id="neighbour-16">
+<img class="neighbour" id="neighbour-17">
+<img class="neighbour" id="neighbour-18">
+<img class="neighbour" id="neighbour-19">
+<img class="neighbour" id="neighbour-20">
+
+
+</body>
+
+</html>
