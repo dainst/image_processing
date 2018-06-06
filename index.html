@@ -52,14 +52,16 @@
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     var search_json = JSON.parse(xobj.responseText);
 
+                    var imageUrl;
+
                     if(!search_json['entities']){
-                        return
+                        imageUrl = ''
+                    }
+                    else {
+                        imageUrl = "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
                     }
 
-                    setImageSrc(
-                        element,
-                        "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
-                    );
+                    setImageSrc(element, imageUrl);
                 }
             };
             xobj.send(null);
@@ -106,10 +108,26 @@
             xobj.send(null);
         }
 
+        function decreaseImageIndex(){
+            imageListIndex -= 1;
+            if(imageListIndex < 0)
+                imageListIndex = 0;
+            updateDisplayedImage()
+        }
+
         function setRandomImage(){
             imageListIndex = Math.floor(Math.random()*imageList.length);
             updateDisplayedImage()
         }
+
+        function increaseImageIndex(){
+            imageListIndex += 1;
+            if(imageListIndex >= imageList.length){
+                imageListIndex = imageList.length - 1
+            }
+            updateDisplayedImage()
+        }
+
         init()
     </script>
 
@@ -118,7 +136,9 @@
 <body>
 
 <div>
+    <button onclick="decreaseImageIndex()">Previous</button>
     <button onclick="setRandomImage()">Random</button>
+    <button onclick="increaseImageIndex()">Next</button>
 </div>
 
 <div>
