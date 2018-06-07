@@ -10,13 +10,14 @@
             margin-bottom: 10px;
         }
         .neighbour {
-            width: 200px;
+            height: 200px;
         }
     </style>
 
     <script typeof="text/javascript">
         var imageList = null;
         var imageListIndex = 0;
+        var arachnePath = "http://bogusman02.dai-cloud.uni-koeln.de/data";
 
         function updateDisplayedImage() {
 
@@ -47,7 +48,7 @@
 
         function setImage(image_name, element) {
             var xobj = new XMLHttpRequest();
-            xobj.open('GET', 'https://arachne.dainst.org/data/search?q=' + image_name)
+            xobj.open('GET', arachnePath + '/search?q=' + image_name)
             xobj.onreadystatechange = function () {
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     var search_json = JSON.parse(xobj.responseText);
@@ -58,7 +59,7 @@
                         imageUrl = ''
                     }
                     else {
-                        imageUrl = "https://arachne.dainst.org/data/image/" + search_json['entities'][0]['entityId']
+                        imageUrl = arachnePath +"/image/" + search_json['entities'][0]['entityId']
                     }
 
                     element.src = imageUrl;
