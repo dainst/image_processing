@@ -16,17 +16,17 @@
     </style>
 
     <script typeof="text/javascript">
-        var imageList = null;
+        var dataPathList = null;
         var imageListIndex = 0;
         var arachnePath = "http://bogusman02.dai-cloud.uni-koeln.de/data";
 
         function updateDisplayedImage() {
 
-            var selectedFile = imageList[imageListIndex];
+            var selectedFilePath = dataPathList[imageListIndex];
 
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', './output/' + selectedFile + '.neighbours.json', true); // Replace 'my_data' with the path to your file
+            xobj.open('GET', selectedFilePath + '.neighbours.json', true); // Replace 'my_data' with the path to your file
             xobj.onreadystatechange = function () {
 
                 if (xobj.readyState === 4 && xobj.status === 200) {
@@ -78,7 +78,7 @@
 
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    imageList = JSON.parse(xobj.responseText);
+                    dataPathList = JSON.parse(xobj.responseText);
                     updateDisplayedImage()
                 }
             };
@@ -93,14 +93,14 @@
         }
 
         function setRandomImage(){
-            imageListIndex = Math.floor(Math.random()*imageList.length);
+            imageListIndex = Math.floor(Math.random()*dataPathList.length);
             updateDisplayedImage()
         }
 
         function increaseImageIndex(){
             imageListIndex += 1;
-            if(imageListIndex >= imageList.length){
-                imageListIndex = imageList.length - 1
+            if(imageListIndex >= dataPathList.length){
+                imageListIndex = dataPathList.length - 1
             }
             updateDisplayedImage()
         }
