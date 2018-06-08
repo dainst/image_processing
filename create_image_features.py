@@ -46,7 +46,7 @@ def create_features(image_list):
                 logger.error(e)
                 logger.error(image)
 
-    return result_name_mapping, result_features
+    return result_name_mapping, np.array(result_features)
 
 
 def process_file_list(image_list, path, batch_count):
