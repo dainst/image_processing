@@ -5,5 +5,8 @@ __pycache__/
 
 test_images/*
 
-output/*.pickle
-output/*.json
+features/*
+!features/README.md
+
+output/*
+!output/README.md
