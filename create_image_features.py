@@ -77,12 +77,8 @@ def process_file_list(path_list):
 
 if __name__ == '__main__':
     image_root = sys.argv[1]
-    output_root = sys.argv[2]
 
     mariadb.establish_connection()
-
-    if not output_root.endswith('/'):
-        output_root += '/'
 
     path_list = []
     file_list = []
