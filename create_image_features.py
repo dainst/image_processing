@@ -1,8 +1,7 @@
 import sys
 import os
-import pickle
-import json
 import logging
+import db.mariadb as mariadb
 
 import tensorflow as tf
 import numpy as np
@@ -49,31 +48,43 @@ def create_features(image_list):
     return result_name_mapping, np.array(result_features)
 
 
-def process_file_list(image_list, path, batch_count):
-    logger.debug(len(image_list))
+def process_file_list(path_list):
+    result_name_mapping = []
+    result_features = []
 
-    (name_list, features) = create_features(image_list=image_list)
-    batch_path = f'{path}{batch_count}/'
+    with tf.Session() as sess:
+        for image_idx, image in enumerate(path_list):
+            try:
+                logger.debug(f"Parsing {image}, (#{image_idx})...")
+                if not tf.gfile.Exists(image):
+                    tf.logging.fatal(f'File does not exist {image}.')
 
-    logger.info(f"Writing processed batch {batch_count}.")
+                with tf.gfile.FastGFile(image, 'rb') as f:
+                    image_data = f.read()
 
-    if not os.path.exists(os.path.dirname(batch_path)):
-        os.makedirs(os.path.dirname(batch_path))
+                    feature_tensor = sess.graph.get_tensor_by_name('pool_3:0')
+                    feature_set = sess.run(feature_tensor, {'DecodeJpeg/contents:0': image_data})
+                    feature_vector = np.squeeze(feature_set)
 
-    with open(batch_path + '/features.pickle', 'wb') as output_file:
-        pickle.dump(features, output_file)
+                    mariadb.write_file_features(os.path.basename(image), feature_vector)
 
-    with open(batch_path + '/image_mapping.json', 'w') as output_file:
-        json.dump(name_list, output_file)
+            except Exception as e:
+                logger.error(e)
+                logger.error(image)
+
+    return result_name_mapping, np.array(result_features)
 
 
 if __name__ == '__main__':
     image_root = sys.argv[1]
     output_root = sys.argv[2]
 
+    mariadb.establish_connection()
+
     if not output_root.endswith('/'):
         output_root += '/'
 
+    path_list = []
     file_list = []
 
     image_counter = 0
@@ -86,16 +97,10 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(image_root):
         for file in files:
             if file.endswith('.jpg'):
-                file_list.append(os.path.abspath(f"{root}/{file}"))
-                image_counter += 1
+                path_list.append(os.path.abspath(f"{root}/{file}"))
+                file_list.append(file)
 
-            if image_counter == 10000:
-                process_file_list(file_list, output_root, batch_counter)
-                batch_counter += 1
-                image_counter = 0
-                file_list = []
-
-    if len(file_list) != 0:
-        process_file_list(file_list, output_root, batch_counter)
+    mariadb.write_filename(file_list=file_list)
+    process_file_list(path_list)
 
     logger.info('Done.')

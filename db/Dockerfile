@@ -20,7 +20,8 @@ RUN echo "CREATE database if not exists $MYSQL_DATABASE_NAME; \
         GRANT ALL ON $MYSQL_DATABASE_NAME.* TO '$MYSQL_USER_NAME'@'%' IDENTIFIED BY '$MYSQL_USER_PASSWORD' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" > /docker-entrypoint-initdb.d/000_create_db_and_user.sql
 
-COPY table_setup/image_name_mapping.sql /docker-entrypoint-initdb.d/001_image_name_mapping.sql
-COPY table_setup/image_neighbours_mapping.sql /docker-entrypoint-initdb.d/002_image_neighbours_mapping.sql
+COPY table_setup/image_names.sql /docker-entrypoint-initdb.d/001_image_names.sql
+COPY table_setup/image_features.sql /docker-entrypoint-initdb.d/002_image_feature.sql
+# COPY table_setup/image_neighbours.sql /docker-entrypoint-initdb.d/002_image_neighbours.sql
 
 EXPOSE 3306
