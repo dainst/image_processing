@@ -1,8 +1,15 @@
 import numpy as np
+import logging
+import gc
 
 import db.mariadb as mariadb
 
-BATCH_SIZE = 50
+logging.basicConfig(format='%(asctime)s-%(levelname)s-%(name)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+BATCH_SIZE = 1000
+NEIGHBOUR_COUNT = 100
 
 
 def calculate_euclidean_distance(matrix_a, matrix_b):
@@ -29,6 +36,7 @@ def start():
         current_compared_ids = []
 
         while offset_comparing < overall_features:
+            logger.info(f'Comparing images {offset} to {offset + BATCH_SIZE} to images {offset_comparing} to {offset_comparing + BATCH_SIZE}.')
             compared_ids, compared_features = mariadb.get_feature_batch(offset_comparing, BATCH_SIZE)
             current_compared_ids.extend(compared_ids)
             if current_distances is None:
@@ -47,13 +55,22 @@ def start():
 
             offset_comparing += BATCH_SIZE
 
+        logger.info(f'Writing results for images {offset} to {offset + BATCH_SIZE}.')
         for idx, image_id in enumerate(current_ids):
             neighbour_distances = current_distances[idx]
-            sorted_neighbour_indices = list(np.argsort(neighbour_distances))
+            sorted_neighbour_indices = list(np.argsort(neighbour_distances))[0:NEIGHBOUR_COUNT]
             sorted_neighbour_file_names = [current_compared_ids[index] for index in sorted_neighbour_indices]
-            result = list(zip(sorted_neighbour_file_names, current_distances[sorted_neighbour_indices].flatten().tolist()))
-
+            result = list(zip(sorted_neighbour_file_names, current_distances[idx][sorted_neighbour_indices].flatten().tolist()))
             mariadb.write_neighbours(image_id, result)
+
+        current_distances = None
+        sorted_neighbour_indices = None
+        sorted_neighbour_file_names = None
+        result = None
+
+        logger.info('Forcing garbage collection.')
+        gc.collect()
+
         offset += BATCH_SIZE
 
 
