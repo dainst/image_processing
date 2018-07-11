@@ -27,6 +27,11 @@ def establish_connection():
                                  use_unicode=True, charset='utf8')
 
 
+def close_connection():
+    global connection
+    connection.close()
+
+
 def write_filename(file_list):
     global connection
 
@@ -98,6 +103,26 @@ def write_neighbours(image_id, neighbours):
     cursor.execute(statement)
     connection.commit()
     cursor.close()
+
+
+def get_image_and_neigbours_by_id(image_id):
+    global connection
+
+    statement = 'SELECT `image_names`.`file_name`, `image_neighbours`.`neighbours` FROM `image_names`, `image_neighbours` WHERE `image_names`.`id`=%s AND `image_neighbours`.`image_id`=`image_names`.`id`;'
+    cursor = connection.cursor()
+    cursor.execute(statement, (image_id,))
+    (image_name, neighbours_data) = cursor.fetchone()
+
+    parsed_json = json.loads(neighbours_data)
+    neighbours = []
+    for neighbour in parsed_json:
+        neighbours.append({
+            'id': neighbour[0],
+            'distance': neighbour[1]
+        })
+
+
+    return image_name, neighbours
 
 
 def commit():
