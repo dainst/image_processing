@@ -75,6 +75,6 @@ def start():
 
 
 if __name__ == '__main__':
-    mariadb.establish_connection("127.0.0.1", "main_user", "pwd", 3308)
+    mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
     start()
     mariadb.close_connection()

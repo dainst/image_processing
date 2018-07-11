@@ -18,9 +18,9 @@ if __name__ == '__main__':
             if file.endswith('.jpg'):
                 if file in known_images:
                     logger.error(file)
-                    known_images[file] += [os.path.abspath(f"{root}/{file}")]
+                    known_images[file] += [os.path.abspath(f'{root}/{file}')]
                 else:
-                    known_images[file] = [os.path.abspath(f"{root}/{file}")]
+                    known_images[file] = [os.path.abspath(f'{root}/{file}')]
 
     for file in known_images:
         if len(known_images[file]) != 1:

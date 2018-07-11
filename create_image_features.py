@@ -26,7 +26,7 @@ def create_features(image_list):
     with tf.Session() as sess:
         for image_idx, image in enumerate(image_list):
             try:
-                logger.debug(f"Parsing {image}, (#{image_idx})...")
+                logger.debug(f'Parsing {image}, (#{image_idx})...')
                 if not tf.gfile.Exists(image):
                     tf.logging.fatal(f'File does not exist {image}.')
 
@@ -55,7 +55,7 @@ def process_file_list(path_list):
     with tf.Session() as sess:
         for image_idx, image in enumerate(path_list):
             try:
-                logger.debug(f"Parsing {image}, (#{image_idx})...")
+                logger.debug(f'Parsing {image}, (#{image_idx})...')
                 if not tf.gfile.Exists(image):
                     tf.logging.fatal(f'File does not exist {image}.')
 
@@ -78,7 +78,7 @@ def process_file_list(path_list):
 if __name__ == '__main__':
     image_root = sys.argv[1]
 
-    mariadb.establish_connection("127.0.0.1", "main_user", "pwd", 3308)
+    mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
 
     path_list = []
     file_list = []
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(image_root):
         for file in files:
             if file.endswith('.jpg'):
-                path_list.append(os.path.abspath(f"{root}/{file}"))
+                path_list.append(os.path.abspath(f'{root}/{file}'))
                 file_list.append(file)
 
     mariadb.write_filename(file_list=file_list)
