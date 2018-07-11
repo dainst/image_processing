@@ -9,3 +9,15 @@ services:
       - '3308:3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
+
+  service-backend:
+    container_name: image_service_backend
+    build:
+      context: ./service
+    environment:
+      PYTHONPATH: /service
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./service:/service
+    working_dir: /service

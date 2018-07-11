@@ -1,0 +1,3 @@
+# pip3 dependencies
+Flask
+flask-cors
