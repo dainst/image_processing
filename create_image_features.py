@@ -78,7 +78,7 @@ def process_file_list(path_list):
 if __name__ == '__main__':
     image_root = sys.argv[1]
 
-    mariadb.establish_connection()
+    mariadb.establish_connection("127.0.0.1", "main_user", "pwd", 3308)
 
     path_list = []
     file_list = []
@@ -100,3 +100,5 @@ if __name__ == '__main__':
     process_file_list(path_list)
 
     logger.info('Done.')
+
+    mariadb.close_connection()

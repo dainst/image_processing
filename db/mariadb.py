@@ -20,10 +20,10 @@ def get_cursor():
     return connection.cursor()
 
 
-def establish_connection():
+def establish_connection(host, user, password, port):
     global connection
 
-    connection = MySQLdb.connect(host="127.0.0.1", user="main_user", passwd="pwd", db=get_db_name(), port=3308,
+    connection = MySQLdb.connect(host=host, user=user, passwd=password, db=get_db_name(), port=port,
                                  use_unicode=True, charset='utf8')
 
 
