@@ -136,8 +136,7 @@
         }
 
         function setRandomImage(){
-            selected_image = Math.floor(Math.random()*90000);
-            console.dir(selected_image);
+            selected_image = Math.floor(Math.random()*image_count);
             getCurrentImageNameAndNeighbours()
         }
 
