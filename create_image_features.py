@@ -48,7 +48,7 @@ def create_features(image_list):
     return result_name_mapping, np.array(result_features)
 
 
-def process_file_list(path_list):
+def process_file_list(path_list, connection):
     result_name_mapping = []
     result_features = []
 
@@ -66,7 +66,7 @@ def process_file_list(path_list):
                     feature_set = sess.run(feature_tensor, {'DecodeJpeg/contents:0': image_data})
                     feature_vector = np.squeeze(feature_set)
 
-                    mariadb.write_file_features(os.path.basename(image), feature_vector)
+                    mariadb.write_file_features(os.path.basename(image), feature_vector, connection)
 
             except Exception as e:
                 logger.error(e)
@@ -78,7 +78,7 @@ def process_file_list(path_list):
 if __name__ == '__main__':
     image_root = sys.argv[1]
 
-    mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
+    connection = mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
 
     path_list = []
     file_list = []
@@ -96,9 +96,9 @@ if __name__ == '__main__':
                 path_list.append(os.path.abspath(f'{root}/{file}'))
                 file_list.append(file)
 
-    mariadb.write_filename(file_list=file_list)
-    process_file_list(path_list)
+    mariadb.write_filename(file_list=file_list, connection=connection)
+    process_file_list(path_list, connection)
 
     logger.info('Done.')
 
-    mariadb.close_connection()
+    connection.close()

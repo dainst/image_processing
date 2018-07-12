@@ -23,21 +23,21 @@ def calculate_euclidean_distance(matrix_a, matrix_b):
     return d
 
 
-def start():
-    overall_features = mariadb.get_feature_count()
+def start(connection):
+    overall_features = mariadb.get_feature_count(connection)
 
-    offset = 0
+    offset = 90000
     while offset < overall_features:
 
         offset_comparing = 0
-        current_ids, current_features = mariadb.get_feature_batch(offset, BATCH_SIZE)
+        current_ids, current_features = mariadb.get_feature_batch(offset, BATCH_SIZE, connection)
 
         current_distances = None
         current_compared_ids = []
 
         while offset_comparing < overall_features:
             logger.info(f'Comparing images {offset} to {offset + BATCH_SIZE} to images {offset_comparing} to {offset_comparing + BATCH_SIZE}.')
-            compared_ids, compared_features = mariadb.get_feature_batch(offset_comparing, BATCH_SIZE)
+            compared_ids, compared_features = mariadb.get_feature_batch(offset_comparing, BATCH_SIZE, connection)
             current_compared_ids.extend(compared_ids)
             if current_distances is None:
                 current_distances = calculate_euclidean_distance(
@@ -61,7 +61,7 @@ def start():
             sorted_neighbour_indices = list(np.argsort(neighbour_distances))[0:NEIGHBOUR_COUNT]
             sorted_neighbour_file_names = [current_compared_ids[index] for index in sorted_neighbour_indices]
             result = list(zip(sorted_neighbour_file_names, current_distances[idx][sorted_neighbour_indices].flatten().tolist()))
-            mariadb.write_neighbours(image_id, result)
+            mariadb.write_neighbours(image_id, result, connection)
 
         current_distances = None
         sorted_neighbour_indices = None
@@ -75,6 +75,6 @@ def start():
 
 
 if __name__ == '__main__':
-    mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
-    start()
-    mariadb.close_connection()
+    connection = mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
+    start(connection)
+    connection.close()
