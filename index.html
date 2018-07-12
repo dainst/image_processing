@@ -18,58 +18,31 @@
     </style>
 
     <script typeof="text/javascript">
-        var image_count = 0;
-        var selected_image = 0;
+        var imageCount = 0;
+        var selectedImage = 0;
         var arachnePath = "https://arachne.dainst.org/data";
 
-        function updateDisplayedImage() {
-
-            var selectedFilePath = dataPathList[imageListIndex];
-
+        function setImage(imageName, element) {
             var xobj = new XMLHttpRequest();
-            xobj.overrideMimeType("application/json");
-            xobj.open('GET', selectedFilePath + '.neighbours.json', true);
-            xobj.onreadystatechange = function () {
-
-                if (xobj.readyState === 4 && xobj.status === 200) {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    var json_data = JSON.parse(xobj.responseText);
-                    var main_image_element = document.querySelector('#main-image');
-
-                    setImage(json_data['file_name'], main_image_element);
-
-                    for(var index in json_data['neighbours']){
-                        var neighbour = json_data['neighbours'][index];
-                        var neighbour_element = document.querySelector('#neighbour-' + index);
-
-                        setImage(neighbour['file_name'], neighbour_element)
-                    }
-                }
-            };
-            xobj.send(null);
-        }
-
-        function setImage(image_name, element) {
-            var xobj = new XMLHttpRequest();
-            xobj.open('GET', arachnePath + '/search?q=' + image_name);
+            xobj.open('GET', arachnePath + '/search?q=' + imageName);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4) {
                     if (xobj.status === 200) {
-                        var search_json = JSON.parse(xobj.responseText);
+                        var searchJson = JSON.parse(xobj.responseText);
 
                         var imageUrl;
 
-                        if (!search_json['entities']) {
+                        if (!searchJson['entities']) {
                             imageUrl = 'icons/key-solid.svg'
                         }
                         else {
-                            imageUrl = arachnePath + "/image/" + search_json['entities'][0]['entityId']
+                            imageUrl = arachnePath + "/image/" + searchJson['entities'][0]['entityId']
                         }
 
                         element.src = imageUrl;
                     }
                     else{
-                        console.dir('Status : ' + xobj.status + ' for image ' + image_name);
+                        console.dir('Status : ' + xobj.status + ' for image ' + imageName);
                         element.src = 'icons/question-circle-solid.svg'
                     }
                 }
@@ -85,8 +58,8 @@
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                     var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
-                    var image_data = JSON.parse(xobj.responseText);
-                    setImage(image_data[0], imageElement);
+                    var imageData = JSON.parse(xobj.responseText);
+                    setImage(imageData[0], imageElement);
                 }
             };
             xobj.send(null);
@@ -95,16 +68,16 @@
         function getCurrentImageNameAndNeighbours(){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_name_and_neighbours/' + selected_image, true); // Replace 'my_data' with the path to your file
+            xobj.open('GET', 'http://localhost:5000/image_name_and_neighbours/' + selectedImage, true); // Replace 'my_data' with the path to your file
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    var image_data = JSON.parse(xobj.responseText);
-                    var main_image_element = document.querySelector('#main-image');
-                    setImage(image_data[0], main_image_element);
+                    var imageData = JSON.parse(xobj.responseText);
+                    var mainImageElement = document.querySelector('#main-image');
+                    setImage(imageData[0], mainImageElement);
                     for(var i = 0; i < 20; i++)
                     {
-                        getImageName(image_data[1][i]['id'], i);
+                        getImageName(imageData[1][i]['id'], i);
                     }
                 }
             };
@@ -119,8 +92,8 @@
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    image_count = JSON.parse(xobj.responseText);
-                    selected_image = 1;
+                    imageCount = JSON.parse(xobj.responseText);
+                    selectedImage = 1;
                     getCurrentImageNameAndNeighbours()
                     //updateDisplayedImage()
                 }
@@ -129,21 +102,21 @@
         }
 
         function decreaseImageIndex(){
-            selected_image -= 1;
-            if(selected_image < 1)
-                selected_image = 1;
+            selectedImage -= 1;
+            if(selectedImage < 1)
+                selectedImage = 1;
             getCurrentImageNameAndNeighbours()
         }
 
         function setRandomImage(){
-            selected_image = Math.floor(Math.random()*image_count);
+            selectedImage = Math.floor(Math.random() * imageCount);
             getCurrentImageNameAndNeighbours()
         }
 
         function increaseImageIndex(){
-            selected_image += 1;
-            if(selected_image > image_count){
-                selected_image = image_count
+            selectedImage += 1;
+            if(selectedImage > imageCount){
+                selectedImage = imageCount
             }
             getCurrentImageNameAndNeighbours()
         }
