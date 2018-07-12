@@ -75,6 +75,12 @@ def start(connection):
 
 
 if __name__ == '__main__':
-    connection = mariadb.establish_connection('127.0.0.1', 'main_user', 'pwd', 3308)
+    connection = mariadb.get_connection(
+        host='127.0.0.1',
+        port=3308,
+        db_name='image_processing_db',
+        user='main_user',
+        password='pwd'
+    )
     start(connection)
     connection.close()

@@ -15,7 +15,8 @@ def index():
 
 @app.route('/image_count', methods=['GET'])
 def image_count():
-    connection = mariadb.establish_connection('image_processing_db', 'main_user', 'pwd', 3306)
+    connection = get_connection()
+
     app.logger.debug(f'Image count requested.')
     query_result = mariadb.get_feature_count(connection)
     connection.close()
@@ -24,7 +25,8 @@ def image_count():
 
 @app.route('/image_name/<image_id>', methods=['GET'])
 def image_name(image_id):
-    connection = mariadb.establish_connection('image_processing_db', 'main_user', 'pwd', 3306)
+    connection = get_connection()
+
     app.logger.debug(f'Image {image_id} requested.')
     query_result = mariadb.get_image_name(image_id, connection)
     connection.close()
@@ -33,11 +35,22 @@ def image_name(image_id):
 
 @app.route('/image_name_and_neighbours/<image_id>', methods=['GET'])
 def image_name_and_neighbours(image_id):
-    connection = mariadb.establish_connection('image_processing_db', 'main_user', 'pwd', 3306)
+    connection = get_connection()
+
     app.logger.debug(f'Image {image_id} requested.')
     query_result = mariadb.get_image_and_neigbours_by_id(image_id, connection)
     connection.close()
     return jsonify(query_result)
+
+
+def get_connection():
+    return mariadb.get_connection(
+        host='image_processing_db',
+        port=3306,
+        db_name='image_processing_db',
+        user='main_user',
+        password='pwd'
+    )
 
 
 if __name__ == '__main__':

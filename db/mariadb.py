@@ -8,14 +8,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def get_db_name():
-    return 'image_processing_db'
+def get_connection(host, port, db_name, user, password):
 
-
-def establish_connection(host, user, password, port):
-
-    return MySQLdb.connect(host=host, user=user, passwd=password, db=get_db_name(), port=port,
+    return MySQLdb.connect(host=host, user=user, passwd=password, db=db_name, port=port,
                            use_unicode=True, charset='utf8')
+
 
 def write_filename(file_list, connection):
 
