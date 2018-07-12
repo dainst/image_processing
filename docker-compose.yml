@@ -9,15 +9,26 @@ services:
       - '3308:3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
+    networks:
+      - network_1
 
   service-backend:
     container_name: image_service_backend
     build:
       context: ./service
     environment:
-      PYTHONPATH: /service
+      PYTHONPATH: /service:/libs
     ports:
       - "5000:5000"
     volumes:
       - ./service:/service
+      - ./db:/libs/db
     working_dir: /service
+    depends_on:
+      - results-db
+    networks:
+      - network_1
+
+networks:
+  network_1:
+    name: 'image_processing'
