@@ -18,36 +18,6 @@ def create_graph():
         _ = tf.import_graph_def(graph_def, name='')
 
 
-def create_features(image_list):
-
-    result_name_mapping = []
-    result_features = []
-
-    with tf.Session() as sess:
-        for image_idx, image in enumerate(image_list):
-            try:
-                logger.debug(f'Parsing {image}, (#{image_idx})...')
-                if not tf.gfile.Exists(image):
-                    tf.logging.fatal(f'File does not exist {image}.')
-
-                with tf.gfile.FastGFile(image, 'rb') as f:
-                    image_data = f.read()
-
-                    feature_tensor = sess.graph.get_tensor_by_name('pool_3:0')
-                    feature_set = sess.run(feature_tensor, {'DecodeJpeg/contents:0': image_data})
-                    feature_vector = np.squeeze(feature_set)
-
-                    result_name_mapping.append(os.path.basename(image))
-                    current_index = len(result_name_mapping) - 1
-                    result_features.append(np.append([current_index], feature_vector))
-
-            except Exception as e:
-                logger.error(e)
-                logger.error(image)
-
-    return result_name_mapping, np.array(result_features)
-
-
 def process_file_list(path_list, connection):
     result_name_mapping = []
     result_features = []
@@ -55,6 +25,9 @@ def process_file_list(path_list, connection):
     with tf.Session() as sess:
         for image_idx, image in enumerate(path_list):
             try:
+                if image_idx % 1000 == 0:
+                    logger.info(f'Processed {image_idx} of {len(path_list)}.')
+
                 logger.debug(f'Parsing {image}, (#{image_idx})...')
                 if not tf.gfile.Exists(image):
                     tf.logging.fatal(f'File does not exist {image}.')
@@ -105,16 +78,18 @@ if __name__ == '__main__':
     logger.info('Creating graph.')
     create_graph()
 
-    logger.info('Starting to process images...')
+    logger.info(f'Collecting JPEGs in directory {image_root}.')
     for root, dirs, files in os.walk(image_root):
         for file in files:
             if file.endswith('.jpg'):
                 path_list.append(os.path.abspath(f'{root}/{file}'))
                 file_list.append(file)
 
+    logger.info('Writing file names to database.')
     mariadb.write_filename(file_list=file_list, connection=connection)
-    process_file_list(path_list, connection)
 
+    logger.info('Starting to process images...')
+    process_file_list(path_list, connection)
     logger.info('Done.')
 
     connection.close()

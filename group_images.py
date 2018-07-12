@@ -30,6 +30,9 @@ def start(connection):
     offset = 0
     while offset < overall_features:
 
+        if offset % 1000 == 0:
+            logger.info(f'Processed {offset} of {overall_features}.')
+
         offset_comparing = 0
         current_ids, current_features = mariadb.get_feature_batch(offset, BATCH_SIZE, connection)
 
@@ -37,7 +40,6 @@ def start(connection):
         current_compared_ids = []
 
         while offset_comparing < overall_features:
-            logger.info(f'Comparing images {offset} to {offset + BATCH_SIZE} to images {offset_comparing} to {offset_comparing + BATCH_SIZE}.')
             compared_ids, compared_features = mariadb.get_feature_batch(offset_comparing, BATCH_SIZE, connection)
             current_compared_ids.extend(compared_ids)
             if current_distances is None:
