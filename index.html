@@ -53,10 +53,9 @@
         function getImageName(id, neighbourNumber){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_name/' + id, true); // Replace 'my_data' with the path to your file
+            xobj.open('GET', 'http://localhost:5000/image_name/' + id, true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                     var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
                     var imageData = JSON.parse(xobj.responseText);
                     setImage(imageData[0], imageElement);
@@ -68,10 +67,9 @@
         function getCurrentImageNameAndNeighbours(){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_name_and_neighbours/' + selectedImage, true); // Replace 'my_data' with the path to your file
+            xobj.open('GET', 'http://localhost:5000/image_name_and_neighbours/' + selectedImage, true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                     var imageData = JSON.parse(xobj.responseText);
                     var mainImageElement = document.querySelector('#main-image');
                     setImage(imageData[0], mainImageElement);
@@ -88,14 +86,12 @@
 
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_count', true); // Replace 'my_data' with the path to your file
+            xobj.open('GET', 'http://localhost:5000/image_count', true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                     imageCount = JSON.parse(xobj.responseText);
                     selectedImage = 1;
                     getCurrentImageNameAndNeighbours()
-                    //updateDisplayedImage()
                 }
             };
             xobj.send(null);
