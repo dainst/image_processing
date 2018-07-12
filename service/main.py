@@ -15,9 +15,17 @@ def index():
     return 'Hello Wolfgang!'
 
 
+@app.route('/image_count', methods=['GET'])
+def image_count():
+    app.logger.debug(f'Image count requested.')
+    query_result = mariadb.get_feature_count()
+
+    return query_result
+
+
 @app.route('/image/<image_id>', methods=['GET'])
 def image(image_id):
-    app.logger.debug(f'Image  requested.')
+    app.logger.debug(f'Image {image_id} requested.')
     query_result = mariadb.get_image_and_neigbours_by_id(image_id)
 
     return jsonify(query_result)
