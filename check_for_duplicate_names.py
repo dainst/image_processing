@@ -8,6 +8,11 @@ logger.setLevel(logging.INFO)
 
 
 if __name__ == '__main__':
+
+    if len(sys.argv) != 2:
+        logger.info('Please provide as arguments: ')
+        logger.info(' 1) Path to image root directory.')
+
     image_root = sys.argv[1]
 
     known_images = {}
