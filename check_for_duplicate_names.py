@@ -21,8 +21,7 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(image_root):
         for file in files:
             if file.endswith('.jpg'):
-                if file in known_images:
-                    logger.error(file)
+                if file in known_images: 
                     known_images[file] += [os.path.abspath(f'{root}/{file}')]
                 else:
                     known_images[file] = [os.path.abspath(f'{root}/{file}')]
