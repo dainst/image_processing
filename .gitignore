@@ -10,3 +10,5 @@ features/*
 
 output/*
 !output/README.md
+
+data/*
