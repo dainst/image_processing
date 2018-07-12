@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 import gc
+import sys
 
 import db.mariadb as mariadb
 
@@ -26,7 +27,7 @@ def calculate_euclidean_distance(matrix_a, matrix_b):
 def start(connection):
     overall_features = mariadb.get_feature_count(connection)
 
-    offset = 90000
+    offset = 0
     while offset < overall_features:
 
         offset_comparing = 0
@@ -75,12 +76,21 @@ def start(connection):
 
 
 if __name__ == '__main__':
+
+    if len(sys.argv) != 6:
+        logger.info('Please provide as arguments: ')
+        logger.info(' 1) MariaDB host.')
+        logger.info(' 2) MariaDB port.')
+        logger.info(' 3) MariaDB database name.')
+        logger.info(' 4) MariaDB user.')
+        logger.info(' 5) MariaDB password.')
+
     connection = mariadb.get_connection(
-        host='127.0.0.1',
-        port=3308,
-        db_name='image_processing_db',
-        user='main_user',
-        password='pwd'
+        host=sys.argv[1],
+        port=sys.argv[2],
+        db_name=sys.argv[3],
+        user=sys.argv[4],
+        password=sys.argv[5]
     )
     start(connection)
     connection.close()

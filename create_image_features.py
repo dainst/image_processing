@@ -77,11 +77,24 @@ def process_file_list(path_list, connection):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 7:
         logger.info('Please provide as arguments: ')
         logger.info(' 1) Path to image root directory.')
+        logger.info(' 2) MariaDB host.')
+        logger.info(' 3) MariaDB port.')
+        logger.info(' 4) MariaDB database name.')
+        logger.info(' 5) MariaDB user.')
+        logger.info(' 6) MariaDB password.')
 
     image_root = sys.argv[1]
+
+    connection = mariadb.get_connection(
+        host=sys.argv[2],
+        port=sys.argv[3],
+        db_name=sys.argv[4],
+        user=sys.argv[5],
+        password=sys.argv[6]
+    )
 
     path_list = []
     file_list = []
@@ -98,14 +111,6 @@ if __name__ == '__main__':
             if file.endswith('.jpg'):
                 path_list.append(os.path.abspath(f'{root}/{file}'))
                 file_list.append(file)
-
-    connection = mariadb.get_connection(
-        host='127.0.0.1',
-        port=3308,
-        db_name='image_processing_db',
-        user='main_user',
-        password='pwd'
-    )
 
     mariadb.write_filename(file_list=file_list, connection=connection)
     process_file_list(path_list, connection)
