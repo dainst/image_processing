@@ -8,7 +8,7 @@ services:
     ports:
       - '3308:3306'
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./db_data/mysql:/var/lib/mysql
     networks:
       - network_1
 
@@ -32,3 +32,7 @@ services:
 networks:
   network_1:
     name: 'image_processing'
+    driver: bridge
+    ipam:
+        config:
+        - subnet: 192.168.18.1/24
