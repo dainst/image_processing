@@ -11,4 +11,4 @@ features/*
 output/*
 !output/README.md
 
-data/*
+db_data/*
