@@ -1,5 +1,3 @@
-USE image_processing_db;
-
 CREATE TABLE `image_features` (
   `image_id` int(10) unsigned NOT NULL,
   `features` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,

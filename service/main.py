@@ -1,8 +1,12 @@
-from flask import Flask, jsonify, request, url_for
+import os
+
+from flask import Flask, jsonify
 from flask_cors import CORS
+
 import db.mariadb as mariadb
 
-app = Flask('nlp_service')
+
+app = Flask('image_processing_service')
 cors = CORS(app, resources={r'*': {'origins': 'http://localhost*'}})
 app.debug = True
 
@@ -45,11 +49,11 @@ def image_name_and_neighbours(image_id):
 
 def get_connection():
     return mariadb.get_connection(
-        host='image_processing_db',
+        host=os.environ['DB_HOST'],
         port=3306,
-        db_name='image_processing_db',
-        user='main_user',
-        password='pwd'
+        db_name=os.environ['DB_NAME'],
+        user=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD']
     )
 
 

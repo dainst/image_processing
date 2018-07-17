@@ -1,10 +1,15 @@
 version: '3.5'
 
 services:
-  results-db:
-    container_name: image_processing_db
+  mariadb:
+    container_name: ${DB_HOST}
     build:
       context: db
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_ROOT_PW: ${DB_ROOT_PW}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - '3308:3306'
     volumes:
@@ -12,12 +17,16 @@ services:
     networks:
       - network_1
 
-  service-backend:
-    container_name: image_service_backend
+  flask:
+    container_name: image_processing_service
     build:
       context: ./service
     environment:
       PYTHONPATH: /service:/libs
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5000:5000"
     volumes:
@@ -25,13 +34,13 @@ services:
       - ./db:/libs/db
     working_dir: /service
     depends_on:
-      - results-db
+      - mariadb
     networks:
       - network_1
 
 networks:
   network_1:
-    name: 'image_processing'
+    name: $NETWORK_NAME
     driver: bridge
     ipam:
         config:

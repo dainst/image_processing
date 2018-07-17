@@ -1,5 +1,3 @@
-USE image_processing_db;
-
 CREATE TABLE `image_names` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `file_name` varchar(256) NOT NULL,
