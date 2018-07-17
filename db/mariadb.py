@@ -48,6 +48,17 @@ def write_file_features(file_name, features, connection):
     cursor.close()
 
 
+def get_image_count(connection):
+    statement = 'SELECT count(*) FROM `image_names`;'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchone()
+    cursor.close()
+
+    return result[0]
+
+
 def get_feature_count(connection):
     statement = 'SELECT count(*) FROM `image_features`;'
 
