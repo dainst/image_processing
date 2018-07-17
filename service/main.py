@@ -18,7 +18,7 @@ def image_count():
     connection = get_connection()
 
     app.logger.debug(f'Image count requested.')
-    query_result = mariadb.get_feature_count(connection)
+    query_result = mariadb.get_image_count(connection)
     connection.close()
     return jsonify(query_result)
 
