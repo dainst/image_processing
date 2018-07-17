@@ -16,14 +16,23 @@ def get_connection(host, port, db_name, user, password):
 
 def write_filename(file_list, connection):
 
-    statement = 'INSERT IGNORE INTO `image_names` (`file_name`) VALUES\n'
-    for idx, image_name in enumerate(file_list):
-        statement += f'("{image_name}"),\n'
-
-    statement = statement[0:-2]
+    batch_size = 10000
+    batch_index = 0
 
     cursor = connection.cursor()
-    cursor.execute(statement)
+
+    while batch_index < len(file_list):
+        batch = file_list[batch_index, batch_index + batch_size]
+
+        statement = 'INSERT IGNORE INTO `image_names` (`file_name`) VALUES\n'
+        for idx, image_name in enumerate(batch):
+            statement += f'("{image_name}"),\n'
+
+        statement = statement[0:-2]
+        cursor.execute(statement)
+
+        batch_index += batch_size
+
     connection.commit()
     cursor.close()
 
