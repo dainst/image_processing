@@ -81,7 +81,7 @@ if __name__ == '__main__':
     logger.info(f'Collecting JPEGs in directory {image_root}.')
     for root, dirs, files in os.walk(image_root):
         for file in files:
-            if file.endswith('.jpg'):
+            if file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.JPG') or file.endswith('JPEG'):
                 path_list.append(os.path.abspath(f'{root}/{file}'))
                 file_list.append(file)
 
