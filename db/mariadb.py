@@ -140,3 +140,5 @@ def get_image_and_neigbours_by_id(image_id, connection):
         logger.debug(statement)
         logger.debug(image_id)
 
+        return []
+
