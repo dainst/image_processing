@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     connection = mariadb.get_connection(
         host=sys.argv[1],
-        port=sys.argv[2],
+        port=int(sys.argv[2]),
         db_name=sys.argv[3],
         user=sys.argv[4],
         password=sys.argv[5]
