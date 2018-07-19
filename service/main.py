@@ -66,6 +66,7 @@ def image_fingerprint(image_id):
     ax = fig.add_subplot(111)
     ax.imshow(reshaped, interpolation='nearest', cmap='plasma')
     canvas = FigureCanvas(fig)
+    fig.axes[0].set_axis_off()
     img = BytesIO()
     canvas.print_figure(img, format='svg', transparent=True, bbox_inches='tight')
 
