@@ -15,6 +15,7 @@ def get_connection(host, port, db_name, user, password):
 
 
 def write_filename(file_list, connection):
+    cursor = connection.cursor()    
 
     batch_size = 10000
     batch_index = 0
@@ -152,4 +153,3 @@ def get_image_and_neigbours_by_id(image_id, connection):
         logger.debug(image_id)
 
         return []
-

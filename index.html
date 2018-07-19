@@ -66,7 +66,7 @@
         function getImageName(id, neighbourNumber){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_name/' + id, true);
+            xobj.open('GET', 'data/image_name/' + id, true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
@@ -83,8 +83,8 @@
         function getCurrentImageNameAndNeighbours(){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_name_and_neighbours/' + selectedImage, true);
-            xobj.onreadystatechange = function () {
+            xobj.open('GET', 'data/image_name_and_neighbours/' + selectedImage, true);
+            xobj.onreadystatechange = function () {	  
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     var imageData = JSON.parse(xobj.responseText);
                     var mainImageElement = document.querySelector('#main-image');
@@ -106,7 +106,7 @@
 
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', 'http://localhost:5000/image_count', true);
+            xobj.open('GET', 'data/image_count', true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     imageCount = JSON.parse(xobj.responseText);

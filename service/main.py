@@ -16,8 +16,10 @@ from io import BytesIO
 import db.mariadb as mariadb
 
 
+
 app = Flask('image_processing_service')
-cors = CORS(app, resources={r'*': {'origins': 'http://localhost*'}})
+cors = CORS(app, resources={r'*': {'origins': ['http://localhost*', 'http://virginiaplain08.klassarchaeologie.uni-koeln.de*']}})
+
 app.debug = True
 
 mimetypes.add_type('image/svg+xml', '.svg')
