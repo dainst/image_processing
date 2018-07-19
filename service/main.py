@@ -1,7 +1,17 @@
 import os
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response, send_file
 from flask_cors import CORS
+import json
+import mimetypes
+import numpy as np
+
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+from io import BytesIO
 
 import db.mariadb as mariadb
 
@@ -9,6 +19,8 @@ import db.mariadb as mariadb
 app = Flask('image_processing_service')
 cors = CORS(app, resources={r'*': {'origins': 'http://localhost*'}})
 app.debug = True
+
+mimetypes.add_type('image/svg+xml', '.svg')
 
 
 @app.route('/')
@@ -35,6 +47,32 @@ def image_name(image_id):
     query_result = mariadb.get_image_name(image_id, connection)
     connection.close()
     return jsonify(query_result)
+
+
+@app.route('/image_fingerprint/<image_id>', methods=['GET'])
+def image_fingerprint(image_id):
+    connection = get_connection()
+
+    app.logger.debug(f'Image {image_id} requested.')
+    query_result = mariadb.get_feature_for_id(image_id, connection)
+    connection.close()
+
+    data = json.loads(query_result[1])
+
+    reshaped = np.resize(data, 46*46)
+    reshaped = np.resize(reshaped, (46, 46))
+
+    fig = Figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(reshaped, interpolation='nearest', cmap='plasma')
+    canvas = FigureCanvas(fig)
+    img = BytesIO()
+    canvas.print_figure(img, format='svg', transparent=True, bbox_inches='tight')
+
+    response = make_response(img.getvalue())
+    response.headers['Content-Type'] = 'image/svg+xml'
+
+    return response
 
 
 @app.route('/image_name_and_neighbours/<image_id>', methods=['GET'])

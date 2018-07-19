@@ -4,8 +4,8 @@ MAINTAINER Deutsches Archäologisches Institut "dev@dainst.de"
 
 ENV REFRESHED_AT 2018-03-19
 
-RUN apk add --update build-base python-dev mysql-dev
-
+RUN apk update
+RUN apk add --update build-base python-dev mysql-dev freetype-dev libpng-dev
 COPY requirements.txt /tmp/requirements.txt
 # Installing numpy takes ages, so I moved it outside of the requirements.txt. Otherwise you would have to wait each time
 # a new dependency is added.

@@ -70,6 +70,17 @@ def get_feature_count(connection):
     return result[0]
 
 
+def get_feature_for_id(id, connection):
+    statement = 'SELECT * FROM `image_features` WHERE `image_id` = ' + str(id) + ';'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchone()
+    cursor.close()
+
+    return result
+
+
 def _get_feature_batch_data(offset, size, connection):
     statement = 'SELECT * FROM `image_features` WHERE `image_id` >= ' + str(offset) + ' AND `image_id` < ' + str(offset + size) + ';'
 
