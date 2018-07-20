@@ -18,9 +18,13 @@ def create_graph():
         _ = tf.import_graph_def(graph_def, name='')
 
 
+def already_processed(file_path, connection):
+    file_name = os.path.basename(file_path)
+    result = mariadb.get_features_by_name(file_name, connection)
+    return result is not None
+
+
 def process_file_list(path_list, connection):
-    result_name_mapping = []
-    result_features = []
 
     with tf.Session() as sess:
         for image_idx, image in enumerate(path_list):
@@ -28,6 +32,8 @@ def process_file_list(path_list, connection):
                 if image_idx % 1000 == 0:
                     logger.info(f'Processed {image_idx} of {len(path_list)}.')
 
+                if already_processed(image, connection):
+                    continue
                 logger.debug(f'Parsing {image}, (#{image_idx})...')
                 if not tf.gfile.Exists(image):
                     tf.logging.fatal(f'File does not exist {image}.')
@@ -45,8 +51,6 @@ def process_file_list(path_list, connection):
                 logger.error(e)
                 logger.error(image)
 
-    return result_name_mapping, np.array(result_features)
-
 
 if __name__ == '__main__':
 
@@ -58,6 +62,7 @@ if __name__ == '__main__':
         logger.info(' 4) MariaDB database name.')
         logger.info(' 5) MariaDB user.')
         logger.info(' 6) MariaDB password.')
+        sys.exit()
 
     image_root = sys.argv[1]
 
