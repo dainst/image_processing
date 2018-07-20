@@ -56,7 +56,7 @@ def image_fingerprint(image_id):
     connection = get_connection()
 
     app.logger.debug(f'Image {image_id} requested.')
-    query_result = mariadb.get_feature_for_id(image_id, connection)
+    query_result = mariadb.get_features_for_id(image_id, connection)
     connection.close()
 
     data = json.loads(query_result[1])

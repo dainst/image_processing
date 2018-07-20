@@ -18,12 +18,17 @@ def write_filename(file_list, connection):
     cursor = connection.cursor()    
 
     batch_size = 10000
+
+    if batch_size > len(file_list):
+        batch_size = len(file_list)
+
     batch_index = 0
 
     cursor = connection.cursor()
 
     while batch_index < len(file_list):
-        batch = file_list[batch_index, batch_index + batch_size]
+
+        batch = file_list[batch_index:batch_index + batch_size]
 
         statement = 'INSERT IGNORE INTO `image_names` (`file_name`) VALUES\n'
         for idx, image_name in enumerate(batch):
@@ -36,6 +41,17 @@ def write_filename(file_list, connection):
 
     connection.commit()
     cursor.close()
+
+
+def is_known_file(file_name, connection):
+    statement = 'SELECT * FROM `image_names` where `file_name`="' + file_name + '";'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchone()
+    cursor.close()
+
+    return result
 
 
 def write_file_features(file_name, features, connection):
@@ -71,8 +87,19 @@ def get_feature_count(connection):
     return result[0]
 
 
-def get_feature_for_id(id, connection):
+def get_features_for_id(id, connection):
     statement = 'SELECT * FROM `image_features` WHERE `image_id` = ' + str(id) + ';'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchone()
+    cursor.close()
+
+    return result
+
+
+def get_features_by_name(file_name, connection):
+    statement = 'SELECT * FROM `image_names`, `image_features` WHERE `image_names`.`file_name` = "' + file_name + '" AND `image_names`.`id`=`image_features`.`image_id`;'
 
     cursor = connection.cursor()
     cursor.execute(statement)
