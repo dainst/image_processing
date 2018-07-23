@@ -32,8 +32,10 @@ def process_file_list(path_list, connection):
                 if image_idx % 1000 == 0:
                     logger.info(f'Processed {image_idx} of {len(path_list)}.')
 
+                # Already processed images (= images with an associated feature-vector) are skipped
                 if already_processed(image, connection):
                     continue
+
                 logger.debug(f'Parsing {image}, (#{image_idx})...')
                 if not tf.gfile.Exists(image):
                     tf.logging.fatal(f'File does not exist {image}.')
@@ -91,7 +93,7 @@ if __name__ == '__main__':
                 file_list.append(file)
 
     logger.info('Writing file names to database.')
-    mariadb.write_filename(file_list=file_list, connection=connection)
+    mariadb.write_file_names(file_list=file_list, connection=connection)
 
     logger.info('Starting to process images...')
     process_file_list(path_list, connection)
