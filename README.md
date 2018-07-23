@@ -48,3 +48,12 @@ python3 group_images.py <db host> <db port> <db name> <db user> <db user passwor
  
 For each image, the script calculates the euclidean distances to all other images and then sorts the result by 
 increasing distance (KNN). The first 100 nearest neighbours are stored in the MariaDB table `image_neighbours`.
+
+## (Ugly) demo
+
+* http://virginiaplain08.klassarchaeologie.uni-koeln.de/
+* ~250k images processed
+* The top image is the current image, followed by the 20 most similar images contained in the set
+* The first in the list of similar images is always the current image as a sanity check
+* The plot next to each image shows the activations 
+[arranged](https://github.com/dainst/image_processing/blob/master/service/main.py#L51) in a 46*46 square.
