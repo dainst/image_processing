@@ -22,9 +22,11 @@ cp .env_template .env
 ```
 docker-compose build && docker-compose up
 ```
+For processing images only MariaDB is required. It should be accessible at port 330**8** on the host system 
+(see [docker-compose.yml](https://github.com/dainst/image_processing/blob/master/docker-compose.yml#L14)).
 
-The [Flask](http://flask.pocoo.org/docs/1.0/) application should be accessible at [localhost:5000](localhost:5000).
-It is only used to serve results. For processing images only MariaDB is required.
+The [Flask](http://flask.pocoo.org/docs/1.0/) application should be accessible at 
+[localhost:5000](http://localhost:5000). It is only used as a REST interface to serve results.
 
 ## Processing images
 
