@@ -36,8 +36,7 @@ python3 create_image_features.py <path to root image folder> <db host> <db port>
 ```
 
 The script parses all JPEG files found below `<path to root image folder>` (including subdirectories, images selected by 
-suffixes).
-and extracts features (a vector containing 2048 float values). The script uses TensorFlow's 
+suffixes) and for each extracts a vector containing 2048 float values. The script uses TensorFlow's 
 [imagenet](https://github.com/tensorflow/models/tree/master/tutorials/image/imagenet) model. Results are saved to 
 in tables `image_features` and `image_names`.
 
