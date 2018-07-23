@@ -52,8 +52,8 @@ increasing distance (KNN). The first 100 nearest neighbours are stored in the Ma
 ## (Ugly) demo
 
 * http://virginiaplain08.klassarchaeologie.uni-koeln.de/
-* ~250k images processed
-* The top image is the current image, followed by the 20 most similar images contained in the set
-* The first in the list of similar images is always the current image as a sanity check
-* The plot next to each image shows the feature vector of 2048 values 
+* ~250k images processed.
+* The top image is the current image, followed by the 20 most similar images contained in the set.
+* The first in the list of similar images is always the current image as a sanity check.
+* The plot next to each image shows the feature vector of 2048 values.
 [arranged](https://github.com/dainst/image_processing/blob/master/service/main.py#L51) in a 46*46 square.
