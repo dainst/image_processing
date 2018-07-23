@@ -1,6 +1,6 @@
-# Image Clustering
+# Image processing
 
-So far, there is no clustering happening, just assigning nearest neighbours for a set of images.
+Experimental image processing using images from [iDAI.arachne](https://arachne.dainst.org).
 
 ## Prerequisites
 
