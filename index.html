@@ -8,10 +8,6 @@
         .main {
             height: 500px;
         }
-        #main-image-fingerprint {
-            width: 500px;
-            border: none;
-        }
         #main {
             display: block;
             margin-left: auto;
@@ -59,10 +55,6 @@
             xobj.send(null);
         }
 
-        function setImageFingerprint(id, element){
-            element.src = 'data/image_fingerprint/' + id;
-        }
-
         function getImageName(id, neighbourNumber){
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
@@ -70,10 +62,8 @@
             xobj.onreadystatechange = function () {
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
-                    var imageElementFingerprint = document.querySelector('#neighbour-' + String(neighbourNumber + 1) + '-fingerprint');
                     var imageData = JSON.parse(xobj.responseText);
 
-                    setImageFingerprint(id, imageElementFingerprint);
                     setImage(imageData[0], imageElement);
                 }
             };
@@ -88,9 +78,7 @@
                 if (xobj.readyState === 4 && xobj.status === 200) {
                     var imageData = JSON.parse(xobj.responseText);
                     var mainImageElement = document.querySelector('#main-image');
-                    var mainImageElementFingerprint = document.querySelector('#main-image-fingerprint');
 
-                    setImageFingerprint(selectedImage, mainImageElementFingerprint);
                     setImage(imageData[0], mainImageElement);
 
                     for(var i = 0; i < 20; i++)
@@ -152,88 +140,69 @@
 
 <div>
     <img class="main" id="main-image" src="">
-    <iframe class="main" id="main-image-fingerprint" src=""></iframe>
+
 </div>
 
 <div>
     <span>
         <img class="neighbour" id="neighbour-1" src="">
-        <iframe class="neighbour" id="neighbour-1-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-2" src="">
-        <iframe class="neighbour" id="neighbour-2-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-3" src="">
-        <iframe class="neighbour" id="neighbour-3-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-4" src="">
-        <iframe class="neighbour" id="neighbour-4-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-5" src="">
-        <iframe class="neighbour" id="neighbour-5-fingerprint" src=""></iframe>
-    </span><span>
-    <img class="neighbour" id="neighbour-6" src="">
-    <iframe class="neighbour" id="neighbour-6-fingerprint" src=""></iframe>
+    </span>
+    <span>
+    	<img class="neighbour" id="neighbour-6" src="">
     </span>
     <span>
         <img class="neighbour" id="neighbour-7" src="">
-        <iframe class="neighbour" id="neighbour-7-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-8" src="">
-        <iframe class="neighbour" id="neighbour-8-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-9" src="">
-        <iframe class="neighbour" id="neighbour-9-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-10" src="">
-        <iframe class="neighbour" id="neighbour-10-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-11" src="">
-        <iframe class="neighbour" id="neighbour-11-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-12" src="">
-        <iframe class="neighbour" id="neighbour-12-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-13" src="">
-        <iframe class="neighbour" id="neighbour-13-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-14" src="">
-        <iframe class="neighbour" id="neighbour-14-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-15" src="">
-        <iframe class="neighbour" id="neighbour-15-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-16" src="">
-        <iframe class="neighbour" id="neighbour-16-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-17" src="">
-        <iframe class="neighbour" id="neighbour-17-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-18" src="">
-        <iframe class="neighbour" id="neighbour-18-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-19" src="">
-        <iframe class="neighbour" id="neighbour-19-fingerprint" src=""></iframe>
     </span>
     <span>
         <img class="neighbour" id="neighbour-20" src="">
-        <iframe class="neighbour" id="neighbour-20-fingerprint" src=""></iframe>
     </span>
 </div>
 
