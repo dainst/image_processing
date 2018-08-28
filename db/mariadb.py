@@ -14,7 +14,7 @@ def get_connection(host, port, db_name, user, password):
                            use_unicode=True, charset='utf8')
 
 
-def write_filename(file_list, connection):
+def write_file_names(file_list, connection):
     cursor = connection.cursor()    
 
     batch_size = 10000

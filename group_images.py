@@ -24,12 +24,15 @@ def calculate_euclidean_distance(matrix_a, matrix_b):
     return d
 
 
-def start(connection):
+def start_vector_processing(connection):
+    global BATCH_SIZE
+    global NEIGHBOUR_COUNT
+
     overall_features = mariadb.get_feature_count(connection)
 
     offset = 0
     while offset < overall_features:
-
+        # Compare each batch...
         if offset % 1000 == 0:
             logger.info(f'Processed {offset} of {overall_features}.')
 
@@ -40,6 +43,7 @@ def start(connection):
         current_compared_ids = []
 
         while offset_comparing < overall_features:
+            # ...with each batch.
             compared_ids, compared_features = mariadb.get_feature_batch(offset_comparing, BATCH_SIZE, connection)
             current_compared_ids.extend(compared_ids)
             if current_distances is None:
@@ -94,5 +98,5 @@ if __name__ == '__main__':
         user=sys.argv[4],
         password=sys.argv[5]
     )
-    start(connection)
+    start_vector_processing(connection)
     connection.close()

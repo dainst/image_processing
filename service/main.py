@@ -1,21 +1,18 @@
 import os
 
-from flask import Flask, jsonify, make_response, send_file
+from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 import json
 import mimetypes
 import numpy as np
 
+from io import BytesIO
+import db.mariadb as mariadb
+
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-
-from io import BytesIO
-
-import db.mariadb as mariadb
-
-
 
 app = Flask('image_processing_service')
 cors = CORS(app, resources={r'*': {'origins': ['http://localhost*', 'http://virginiaplain08.klassarchaeologie.uni-koeln.de*']}})
@@ -68,7 +65,9 @@ def image_fingerprint(image_id):
     ax = fig.add_subplot(111)
     ax.imshow(reshaped, interpolation='nearest', cmap='plasma')
     canvas = FigureCanvas(fig)
+
     fig.axes[0].set_axis_off()
+
     img = BytesIO()
     canvas.print_figure(img, format='svg', transparent=True, bbox_inches='tight')
 
