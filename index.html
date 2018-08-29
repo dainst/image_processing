@@ -22,9 +22,11 @@
 
   <script typeof="text/javascript">
       var imageCount = 0;
-      var selectedImage = 0;
+      var selectedImage = -1;
       var arachnePath = 'https://arachne.dainst.org/data';
-      var flaskPath = 'data/';
+      // var flaskPath = 'data/'; // Deployment
+      var flaskPath = 'http://localhost:5000/'; // Development
+      var hashRegex = /#(\d+)/;
 
       function setImage(imageName, element) {
           var xobj = new XMLHttpRequest();
@@ -77,8 +79,13 @@
                   var imageData = JSON.parse(xobj.responseText);
                   var mainImageElement = document.querySelector('#main-image');
 
-                  setImage(imageData[0], mainImageElement);
+                  if(imageData.length === 0) {
+                      // TODO: High ID images get empty results from service
+                      console.log('No data for image #' + selectedImage + "!");
+                      return;
+                  }
 
+                  setImage(imageData[0], mainImageElement);
                   for (var i = 0; i < 20; i++) {
                       getImageName(imageData[1][i]['id'], i);
                   }
@@ -87,14 +94,36 @@
           xobj.send(null);
       }
 
+      function checkHash() {
+          if(window.location.hash) {
+              selectedImage = hashRegex.exec(window.location.hash)[1];
+              if (selectedImage > imageCount) {
+                  selectedImage = imageCount;
+                  updateHash();
+              } else if (selectedImage < 1) {
+                  selectedImage = 1;
+                  updateHash();
+              }
+          } else {
+              console.log('No hash, setting to first image...');
+              selectedImage = 1;
+              updateHash()
+          }
+      }
+
+      function updateHash() {
+          window.location.hash = '#' + selectedImage;
+      }
+
       function init() {
+
           var xobj = new XMLHttpRequest();
           xobj.overrideMimeType('application/json');
           xobj.open('GET', flaskPath + 'image_count', true);
           xobj.onreadystatechange = function () {
               if (xobj.readyState === 4 && xobj.status === 200) {
                   imageCount = JSON.parse(xobj.responseText);
-                  selectedImage = 1;
+                  checkHash();
                   getCurrentImageNameAndNeighbours()
               }
           };
@@ -103,13 +132,16 @@
 
       function decreaseImageIndex() {
           selectedImage -= 1;
-          if (selectedImage < 1)
+          if (selectedImage < 1) {
               selectedImage = 1;
+          }
+          updateHash();
           getCurrentImageNameAndNeighbours()
       }
 
       function setRandomImage() {
           selectedImage = Math.floor(Math.random() * imageCount);
+          updateHash();
           getCurrentImageNameAndNeighbours()
       }
 
@@ -118,6 +150,7 @@
           if (selectedImage > imageCount) {
               selectedImage = imageCount
           }
+          updateHash();
           getCurrentImageNameAndNeighbours()
       }
 
