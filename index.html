@@ -8,7 +8,7 @@
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
   <style type="text/css">
     img#main-image {
@@ -16,7 +16,7 @@
     }
 
     img.neighbour {
-      max-height: 200px;
+      height: 200px;
     }
   </style>
 
@@ -70,13 +70,13 @@
               else {
                   imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId'];
                   linkUrl = arachnePath.substr(0, arachnePath.indexOf('/data')) + '/entity/' + searchJson['entities'][0]['entityId'];
-                  linkText = 'Arachne';
+                  linkText = 'Arachne <i class="fas fa-external-link-alt"></i>';
                   smallText = searchJson['entities'][0]['title'];
               }
 
               imageElement.src = imageUrl;
               linkElement.href = linkUrl;
-              linkElement.text = linkText;
+              linkElement.innerHTML = linkText;
               textElement.innerHTML = smallText;
           })
       }
@@ -99,9 +99,7 @@
 
               imageElement.src = imageUrl;
               linkElement.onclick = function () {
-                  selectedImage = imageId;
-                  updateHash();
-                  getCurrentImageNameAndNeighbours()
+                  updateHash(imageId);
               };
           })
       }
@@ -144,26 +142,36 @@
           xobj.send(null);
       }
 
-      function checkHash() {
+      function readHash() {
           if(window.location.hash) {
               selectedImage = hashRegex.exec(window.location.hash)[1];
               if (selectedImage > imageCount) {
                   selectedImage = imageCount;
-                  updateHash();
               } else if (selectedImage < 1) {
                   selectedImage = 1;
-                  updateHash();
               }
           } else {
               console.log('No hash, setting to first image...');
               selectedImage = 1;
-              updateHash()
           }
       }
 
-      function updateHash() {
-          window.location.hash = '#' + selectedImage;
+      function updateHash(id) {
+          window.location.hash = '#' + id;
       }
+
+      window.onhashchange = function () {
+          var value = hashRegex.exec(window.location.hash)[1];
+
+          if (value > imageCount) {
+              selectedImage = imageCount;
+          } else if (value < 1) {
+              selectedImage = 1;
+          } else {
+              selectedImage = value;
+          }
+          getCurrentImageNameAndNeighbours();
+      };
 
       function init() {
 
@@ -173,7 +181,7 @@
           xobj.onreadystatechange = function () {
               if (xobj.readyState === 4 && xobj.status === 200) {
                   imageCount = JSON.parse(xobj.responseText);
-                  checkHash();
+                  readHash();
                   getCurrentImageNameAndNeighbours()
               }
           };
@@ -181,27 +189,24 @@
       }
 
       function decreaseImageIndex() {
-          selectedImage -= 1;
-          if (selectedImage < 1) {
-              selectedImage = 1;
+          var newValue = parseInt(selectedImage) - 1;
+          if (newValue < 1) {
+              newValue = 1;
           }
-          updateHash();
-          getCurrentImageNameAndNeighbours()
+          updateHash(newValue);
       }
 
       function setRandomImage() {
-          selectedImage = Math.floor(Math.random() * imageCount);
-          updateHash();
-          getCurrentImageNameAndNeighbours()
+          var newValue = Math.floor(Math.random() * imageCount);
+          updateHash(newValue);
       }
 
       function increaseImageIndex() {
-          selectedImage += 1;
-          if (selectedImage > imageCount) {
-              selectedImage = imageCount
+          var newValue = parseInt(selectedImage) + 1;
+          if (newValue > imageCount) {
+              newValue = imageCount
           }
-          updateHash();
-          getCurrentImageNameAndNeighbours()
+          updateHash(newValue);
       }
 
       init()
@@ -219,7 +224,7 @@
       <img class="img-fluid card-img-top" alt="Main image" id="main-image" src="">
       <div class="card-body">
         <h5 class="card-title">
-          <a href="" id="main-link"></a></h5>
+          <a href="" id="main-link" target="_blank"></a></h5>
         <p class="card-text"><small class="text-muted">-</small></p>
       </div>
     </div>
