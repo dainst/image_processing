@@ -28,32 +28,82 @@
       var flaskPath = 'http://localhost:5000/'; // Development
       var hashRegex = /#(\d+)/;
 
-      function setImage(imageName, element) {
+      function getArachneImageData(imageName, callback) {
           var xobj = new XMLHttpRequest();
           xobj.open('GET', arachnePath + '/search?q=' + imageName);
           xobj.onreadystatechange = function () {
               if (xobj.readyState === 4) {
+
                   if (xobj.status === 200) {
-                      var searchJson = JSON.parse(xobj.responseText);
-
-                      var imageUrl;
-
-                      if (!searchJson['entities']) {
-                          imageUrl = 'icons/key-solid.svg'
-                      }
-                      else {
-                          imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId']
-                      }
-
-                      element.src = imageUrl;
+                      callback(JSON.parse(xobj.responseText))
                   }
                   else {
                       console.dir('Status : ' + xobj.status + ' for image ' + imageName);
-                      element.src = 'icons/question-circle-solid.svg'
+                      callback(false);
                   }
               }
           };
           xobj.send(null);
+      }
+      
+      function setMainImage(imageName, element) {
+          var imageElement = element.querySelector('img');
+          var linkElement = element.querySelector('a');
+          var textElement = element.querySelector('small');
+
+          var imageUrl;
+          var linkUrl;
+          var linkText;
+          var smallText;
+
+          getArachneImageData(imageName, function (searchJson) {
+              if (searchJson === false) {
+                  imageElement.src = 'icons/question-circle-solid.svg';
+                  linkText = 'Failed to load Arachne data.';
+                  smallText = '-';
+              }
+              else if (!searchJson['entities']) {
+                  imageUrl = 'icons/key-solid.svg';
+                  linkText = 'Failed to load Arachne data.';
+                  smallText = '-';
+              }
+              else {
+                  imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId'];
+                  linkUrl = arachnePath.substr(0, arachnePath.indexOf('/data')) + '/entity/' + searchJson['entities'][0]['entityId'];
+                  linkText = 'Arachne';
+                  smallText = searchJson['entities'][0]['title'];
+              }
+
+              imageElement.src = imageUrl;
+              linkElement.href = linkUrl;
+              linkElement.text = linkText;
+              textElement.innerHTML = smallText;
+          })
+      }
+
+      function setNeighbourImage(imageId, imageName, linkElement) {
+          var imageElement = linkElement.querySelector('img');
+
+          var imageUrl;
+
+          getArachneImageData(imageName, function (searchJson) {
+              if (searchJson === false) {
+                  imageElement.src = 'icons/question-circle-solid.svg';
+              }
+              else if (!searchJson['entities']) {
+                  imageUrl = 'icons/key-solid.svg';
+              }
+              else {
+                  imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId'];
+              }
+
+              imageElement.src = imageUrl;
+              linkElement.onclick = function () {
+                  selectedImage = imageId;
+                  updateHash();
+                  getCurrentImageNameAndNeighbours()
+              };
+          })
       }
 
       function getImageName(id, neighbourNumber) {
@@ -64,7 +114,7 @@
               if (xobj.readyState === 4 && xobj.status === 200) {
                   var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
                   var imageData = JSON.parse(xobj.responseText);
-                  setImage(imageData[0], imageElement);
+                  setNeighbourImage(id, imageData[0], imageElement);
               }
           };
           xobj.send(null);
@@ -77,7 +127,7 @@
           xobj.onreadystatechange = function () {
               if (xobj.readyState === 4 && xobj.status === 200) {
                   var imageData = JSON.parse(xobj.responseText);
-                  var mainImageElement = document.querySelector('#main-image');
+                  var mainImageElement = document.querySelector('#main-card');
 
                   if(imageData.length === 0) {
                       // TODO: High ID images get empty results from service
@@ -85,7 +135,7 @@
                       return;
                   }
 
-                  setImage(imageData[0], mainImageElement);
+                  setMainImage(imageData[0], mainImageElement);
                   for (var i = 0; i < 20; i++) {
                       getImageName(imageData[1][i]['id'], i);
                   }
@@ -165,7 +215,15 @@
 
 
   <div class="row justify-content-center">
-    <img class="img-fluid" alt="Main image" id="main-image" src="">
+    <div class="card" id="main-card">
+      <img class="img-fluid card-img-top" alt="Main image" id="main-image" src="">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="" id="main-link"></a></h5>
+        <p class="card-text"><small class="text-muted">-</small></p>
+      </div>
+    </div>
+
   </div>
   <p>
   <div class="row justify-content-center">
@@ -177,26 +235,26 @@
   </div>
   </p>
   <div class="row">
-    <img class="neighbour" id="neighbour-1" src="">
-    <img class="neighbour" id="neighbour-2" src="">
-    <img class="neighbour" id="neighbour-3" src="">
-    <img class="neighbour" id="neighbour-4" src="">
-    <img class="neighbour" id="neighbour-5" src="">
-    <img class="neighbour" id="neighbour-6" src="">
-    <img class="neighbour" id="neighbour-7" src="">
-    <img class="neighbour" id="neighbour-8" src="">
-    <img class="neighbour" id="neighbour-9" src="">
-    <img class="neighbour" id="neighbour-10" src="">
-    <img class="neighbour" id="neighbour-11" src="">
-    <img class="neighbour" id="neighbour-12" src="">
-    <img class="neighbour" id="neighbour-13" src="">
-    <img class="neighbour" id="neighbour-14" src="">
-    <img class="neighbour" id="neighbour-15" src="">
-    <img class="neighbour" id="neighbour-16" src="">
-    <img class="neighbour" id="neighbour-17" src="">
-    <img class="neighbour" id="neighbour-18" src="">
-    <img class="neighbour" id="neighbour-19" src="">
-    <img class="neighbour" id="neighbour-20" src="">
+    <span id="neighbour-1"><img class="neighbour" src=""></span>
+    <span id="neighbour-2"><img class="neighbour" src=""></span>
+    <span id="neighbour-3"><img class="neighbour" src=""></span>
+    <span id="neighbour-4"><img class="neighbour" src=""></span>
+    <span id="neighbour-5"><img class="neighbour" src=""></span>
+    <span id="neighbour-6"><img class="neighbour" src=""></span>
+    <span id="neighbour-7"><img class="neighbour" src=""></span>
+    <span id="neighbour-8"><img class="neighbour" src=""></span>
+    <span id="neighbour-9"><img class="neighbour" src=""></span>
+    <span id="neighbour-10"><img class="neighbour" src=""></span>
+    <span id="neighbour-11"><img class="neighbour" src=""></span>
+    <span id="neighbour-12"><img class="neighbour" src=""></span>
+    <span id="neighbour-13"><img class="neighbour" src=""></span>
+    <span id="neighbour-14"><img class="neighbour" src=""></span>
+    <span id="neighbour-15"><img class="neighbour" src=""></span>
+    <span id="neighbour-16"><img class="neighbour" src=""></span>
+    <span id="neighbour-17"><img class="neighbour" src=""></span>
+    <span id="neighbour-18"><img class="neighbour" src=""></span>
+    <span id="neighbour-19"><img class="neighbour" src=""></span>
+    <span id="neighbour-20"><img class="neighbour" src=""></span>
   </div>
 </div>
 </body>
