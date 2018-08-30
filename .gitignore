@@ -1,9 +1,8 @@
 # Python
 __pycache__/
 
-# Docker compose files
+# Docker configuration
 .env
-docker-compose.yml
 
 # MariaDB directory created by Docker
 db_data/*

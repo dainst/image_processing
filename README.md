@@ -14,11 +14,10 @@ running MySQL-/MariaDB containing the three required
 
 ## Running Docker
 
-1 - Copy the docker-compose environment file and the docker-compose template and adjust the database credentials and 
-other configuration  as needed.
+1 - Copy the docker-compose environment file template and adjust the database credentials and 
+other configuration as needed.
 ```
 cp .env_template .env
-cp docker-compose.yml_template docker-compose.yml
 ```
 
 2 - Build the Docker images and start one container each.
