@@ -66,6 +66,7 @@
               else if (!searchJson['entities']) {
                   imageUrl = 'icons/key-solid.svg';
                   linkText = 'Failed to load Arachne data.';
+                  linkUrl = arachnePath.substr(0, arachnePath.indexOf('/data')) + '/search?q=' + imageName;
                   smallText = '-';
               }
               else {
