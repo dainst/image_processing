@@ -121,6 +121,9 @@
       }
 
       function getCurrentImageNameAndNeighbours() {
+
+          setPlaceHolders();
+
           var xobj = new XMLHttpRequest();
           xobj.overrideMimeType('application/json');
           xobj.open('GET', flaskPath + 'image_name_and_neighbours/' + selectedImage, true);
@@ -160,6 +163,14 @@
 
       function updateHash(id) {
           window.location.hash = '#' + id;
+      }
+
+      function setPlaceHolders() {
+          var image_elements = document.querySelectorAll('img');
+
+          for(var i = 0; i < image_elements.length; i++){
+              image_elements[i].src = 'https://arachne.dainst.org/img/placeholder/placeholderNoImage.png';
+          }
       }
 
       window.onhashchange = function () {
@@ -220,7 +231,16 @@
 
 <div class="container-fluid">
 
+  <br/>
+  <div class="row justify-content-center">
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-primary" onclick="decreaseImageIndex()">Previous</button>
+      <button type="button" class="btn btn-primary" onclick="setRandomImage()">Random</button>
+      <button type="button" class="btn btn-primary" onclick="increaseImageIndex()">Next</button>
+    </div>
+  </div>
 
+  <br/>
   <div class="row justify-content-center">
     <div class="card" id="main-card">
       <img class="img-fluid card-img-top" alt="Main image" id="main-image" src="">
@@ -230,17 +250,9 @@
         <p class="card-text"><small class="text-muted">-</small></p>
       </div>
     </div>
+  </div>
 
-  </div>
-  <p>
-  <div class="row justify-content-center">
-    <div class="btn-group" role="group" aria-label="Basic example">
-      <button type="button" class="btn btn-primary" onclick="decreaseImageIndex()">Previous</button>
-      <button type="button" class="btn btn-primary" onclick="setRandomImage()">Random</button>
-      <button type="button" class="btn btn-primary" onclick="increaseImageIndex()">Next</button>
-    </div>
-  </div>
-  </p>
+  <br/>
   <div class="row">
     <span id="neighbour-1"><img class="neighbour" src=""></span>
     <span id="neighbour-2"><img class="neighbour" src=""></span>
