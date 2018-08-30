@@ -35,6 +35,7 @@ services:
     working_dir: /service
     depends_on:
       - mariadb
+    # restart: always # uncomment for deployment on server
     networks:
       - network_1
 

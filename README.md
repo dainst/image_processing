@@ -6,16 +6,19 @@ Experimental image processing using images from [iDAI.arachne](https://arachne.d
 
 * Python 3
 * [Tensorflow](https://www.tensorflow.org/)
-* [Docker](https://www.docker.com) and [docker compose](https://docs.docker.com/compose/), alternatively you'll need a running MySQL-/MariaDB containing the three required 
+* [Docker](https://www.docker.com) and [docker compose](https://docs.docker.com/compose/), alternatively you'll need a 
+running MySQL-/MariaDB containing the three required 
 [tables](https://github.com/dainst/image_processing/tree/master/db/table_setup).
 * Folder(s) with images: The script currently expects all files to have distinct names and to be JPEG.
 
 
 ## Running Docker
 
-1 - Copy the docker-compose environment file template and adjust the database credentials as needed.
+1 - Copy the docker-compose environment file and the docker-compose template and adjust the database credentials and 
+other configuration  as needed.
 ```
 cp .env_template .env
+cp docker-compose.yml_template docker-compose.yml
 ```
 
 2 - Build the Docker images and start one container each.
