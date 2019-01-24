@@ -21,11 +21,11 @@ RUN echo "CREATE database if not exists $DB_NAME CHARACTER SET utf8 COLLATE utf8
         GRANT ALL ON $DB_NAME.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" > /docker-entrypoint-initdb.d/000000_create_db_and_user.sql
 
-COPY table_setup/image_names.sql /docker-entrypoint-initdb.d/000001_image_names.sql
+COPY table_setup/image_files.sql /docker-entrypoint-initdb.d/000001_image_files.sql
 COPY table_setup/image_features.sql /docker-entrypoint-initdb.d/000002_image_feature.sql
 COPY table_setup/image_neighbours.sql /docker-entrypoint-initdb.d/000003_image_neighbours.sql
 
-RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000001_image_names.sql)" > /docker-entrypoint-initdb.d/000001_image_names.sql
+RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000001_image_files.sql)" > /docker-entrypoint-initdb.d/000001_image_files.sql
 RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000002_image_feature.sql)" > /docker-entrypoint-initdb.d/000002_image_feature.sql
 RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000003_image_neighbours.sql)" > /docker-entrypoint-initdb.d/000003_image_neighbours.sql
 
