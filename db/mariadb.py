@@ -28,6 +28,7 @@ def write_files_data(file_data_tuples, connection):
         batch = file_data_tuples[batch_index:batch_index+batch_size]
         statement = 'INSERT INTO `image_files` (`name`, `path`, `url`) VALUES (%s, %s, %s);'
         cursor.executemany(statement, batch)
+        batch_index += batch_size
 
     connection.commit()
 
