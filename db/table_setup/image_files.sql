@@ -5,6 +5,5 @@ CREATE TABLE `image_files` (
  `url` varchar(256),
  PRIMARY KEY (`id`),
  UNIQUE KEY `id_UNIQUE` (`id`),
- UNIQUE KEY `file_name_UNIQUE` (`name`),
  UNIQUE KEY `file_path_UNIQUE` (`path`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
