@@ -2,7 +2,6 @@ import argparse
 import logging
 import db.mariadb as mariadb
 import os
-import MySQLdb
 
 from requests_futures.sessions import FuturesSession
 
@@ -23,29 +22,21 @@ parser.add_argument("password", help="MariaDB user password")
 parser.add_argument("--arachne", help="Try retrieving Arachne URLs for image names (https://arachne.dainst.org)",
                     action="store_true")
 
-data = []
 
-if __name__ == '__main__':
+def scan(image_directory, connection, resolve_arachne_url):
 
-    args = parser.parse_args()
+    data = []
 
-    connection = mariadb.get_connection(
-        args.host, int(args.port), args.db, args.user, args.password
-    )
-
-    image_counter = 0
-    batch_counter = 0
-
-    logger.info(f'Collecting JPEGs in directory {args.dir}.')
-    for root, dirs, files in os.walk(args.dir):
+    logger.info(f'Collecting JPEGs in directory {image_directory}.')
+    for root, dirs, files in os.walk(image_directory):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.JPG') or file.endswith('JPEG'):
                 data.append((file, os.path.abspath(f'{root}/{file}'), None))
 
-    if args.arachne:
+    if resolve_arachne_url:
         logger.info('Trying to resolve Arachne URLs, this may take some time.')
 
-        session = FuturesSession()
+        session = FuturesSession(max_workers=100)
 
         arachne_path = 'https://arachne.dainst.org/data'
         futures = []
@@ -60,9 +51,12 @@ if __name__ == '__main__':
             data[idx] = (data[idx][0], data[idx][1], f'{arachne_path}/image/{entity_id}')
 
     logger.info('Writing file data to database..')
-    try:
-        mariadb.write_files_data(data, connection)
-    except MySQLdb._exceptions.IntegrityError as e:
-        logger.warning(e)
+    mariadb.write_files_data(data, connection)
 
-    connection.close()
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    con = mariadb.get_connection(args.host, int(args.port), args.db, args.user, args.password)
+    scan(args.dir, con, args.arachne is True)
+    con.close()
