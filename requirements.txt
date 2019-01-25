@@ -1,3 +1,5 @@
 # pip3 dependencies
 mysqlclient
 matplotlib
+requests
+requests-futures
