@@ -62,8 +62,10 @@ def scan(image_directory, db_host, db_port, db_name, db_user, db_password , reso
                     json_value = response.result().json()
                     if json_value['size'] == 1:
                         entity_id = json_value['entities'][0]['entityId']
-                    current_batch[idx] = (current_batch[idx][0], current_batch[idx][1],
-                                          f'{arachne_path}/image/{entity_id}')
+
+                    if entity_id is not None:
+                        current_batch[idx] = (current_batch[idx][0], current_batch[idx][1],
+                                              f'{arachne_path}/image/{entity_id}')
                 except json.decoder.JSONDecodeError as e:
                     logger.error(e)
                     logger.error(response)
