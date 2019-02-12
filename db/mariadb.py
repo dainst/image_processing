@@ -16,7 +16,7 @@ def get_connection(host, port, db_name, user, password):
 
 def write_files_data(file_data_tuples, connection):
 
-    batch_size = 10000
+    batch_size = 100
 
     if batch_size > len(file_data_tuples):
         batch_size = len(file_data_tuples)
@@ -31,6 +31,18 @@ def write_files_data(file_data_tuples, connection):
         batch_index += batch_size
 
     connection.commit()
+
+
+def get_files_data(offset, limit, connection):
+
+    statement = 'SELECT * FROM `image_files` WHERE `id` >= %s AND `id` < %s'
+    values = (offset + 1, offset + 1 + limit)
+
+    cursor = connection.cursor()
+    cursor.execute(statement, values)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
 
 
 def write_file_names(file_list, connection):
