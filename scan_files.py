@@ -2,6 +2,7 @@ import argparse
 import logging
 import db.mariadb as mariadb
 import os
+import json
 
 from requests_futures.sessions import FuturesSession
 
@@ -23,7 +24,7 @@ parser.add_argument("--arachne", help="Try retrieving Arachne URLs for image nam
                     action="store_true")
 
 
-def scan(image_directory, connection, resolve_arachne_url):
+def scan(image_directory, db_host, db_port, db_name, db_user, db_password , resolve_arachne_url):
 
     data = []
 
@@ -33,30 +34,47 @@ def scan(image_directory, connection, resolve_arachne_url):
             if file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.JPG') or file.endswith('JPEG'):
                 data.append((file, os.path.abspath(f'{root}/{file}'), None))
 
+    batch_counter = 0
+    batch_size = 1000
+
+    logger.info('Processing batches.')
     if resolve_arachne_url:
-        logger.info('Trying to resolve Arachne URLs, this may take some time.')
+        logger.info('  Trying to resolve Arachne URLs, this may take some time.')
 
-        session = FuturesSession(max_workers=100)
+    while batch_counter < len(data):
 
-        arachne_path = 'https://arachne.dainst.org/data'
-        futures = []
-        for (name, _path, _url) in data:
-            futures.append(session.get(f'{arachne_path}/search?q={name}'))
+        logger.info(f"  Processing batch {batch_counter} to {batch_counter+batch_size} of {len(data)}.")
+        current_batch = data[batch_counter:batch_counter+batch_size]
 
-        for idx, response in enumerate(futures):
-            entity_id = None
-            json_value = response.result().json()
-            if json_value['size'] == 1:
-                entity_id = json_value['entities'][0]['entityId']
-            data[idx] = (data[idx][0], data[idx][1], f'{arachne_path}/image/{entity_id}')
+        if resolve_arachne_url:
 
-    logger.info('Writing file data to database..')
-    mariadb.write_files_data(data, connection)
+            session = FuturesSession(max_workers=10)
+
+            arachne_path = 'https://arachne.dainst.org/data'
+            futures = []
+            for (name, _path, _url) in current_batch:
+                futures.append(session.get(f'{arachne_path}/search?q={name}'))
+
+            for idx, response in enumerate(futures):
+
+                try:
+                    entity_id = None
+                    json_value = response.result().json()
+                    if json_value['size'] == 1:
+                        entity_id = json_value['entities'][0]['entityId']
+                    current_batch[idx] = (current_batch[idx][0], current_batch[idx][1],
+                                          f'{arachne_path}/image/{entity_id}')
+                except json.decoder.JSONDecodeError as e:
+                    logger.error(e)
+                    logger.error(response)
+
+        con = mariadb.get_connection(db_host, db_port, db_name, db_user, db_password)
+        mariadb.write_files_data(current_batch, con)
+        con.close()
+
+        batch_counter += batch_size
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-
-    con = mariadb.get_connection(args.host, int(args.port), args.db, args.user, args.password)
-    scan(args.dir, con, args.arachne is True)
-    con.close()
+    scan(args.dir, args.host, int(args.port), args.db, args.user, args.password, args.arachne is True)
