@@ -3,6 +3,7 @@ import logging
 import db.mariadb as mariadb
 import os
 import json
+import MySQLdb._exceptions as mysql_exceptions
 
 from requests_futures.sessions import FuturesSession
 
@@ -71,7 +72,10 @@ def scan(image_directory, db_host, db_port, db_name, db_user, db_password , reso
                     logger.error(response)
 
         con = mariadb.get_connection(db_host, db_port, db_name, db_user, db_password)
-        mariadb.write_files_data(current_batch, con)
+        try:
+            mariadb.write_files_data(current_batch, con)
+        except mysql_exceptions.DataError as e:
+            logger.error(e)
         con.close()
 
         batch_counter += batch_size
