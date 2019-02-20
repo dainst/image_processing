@@ -3,3 +3,5 @@ mysqlclient
 matplotlib
 requests
 requests-futures
+keras
+Pillow
