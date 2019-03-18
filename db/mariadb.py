@@ -85,26 +85,28 @@ def is_known_file(file_name, connection):
     return result
 
 
-def write_file_features(file_name, features, connection):
+def write_file_features(image_id, features, connection):
 
-    statement = 'INSERT IGNORE INTO `image_features` (`image_id`, `features`) ' \
-                'VALUES ((SELECT `id` FROM `image_names` WHERE `file_name` = "' + file_name + '"), "' + json.dumps(features.tolist()) +'");'
-
-    cursor = connection.cursor()
-    cursor.execute(statement)
-    connection.commit()
-    cursor.close()
-
-
-def write_file_compressed_features(image_id, features, connection):
-
-    statement = 'INSERT IGNORE INTO `image_features_compressed` (`image_id`, `features`) ' \
-                'VALUES ("' + str(image_id) + '", "' + json.dumps(features.tolist()) + '");'
+    statement = 'INSERT IGNORE INTO `image_features` (`image_id`, `features`) VALUES (%s, %s);'
+    values = (image_id, json.dumps(features.tolist()))
 
     cursor = connection.cursor()
-    cursor.execute(statement)
-    connection.commit()
+    cursor.execute(statement, values)
     cursor.close()
+
+    connection.commit()
+
+
+def write_uncompressed_file_features(image_id, features, connection):
+
+    statement = 'INSERT IGNORE INTO `image_features_uncompressed` (`image_id`, `features`) VALUES (%s, %s);'
+    values = (image_id, json.dumps(features.tolist()))
+
+    cursor = connection.cursor()
+    cursor.execute(statement, values)
+    cursor.close()
+
+    connection.commit()
 
 
 def write_batch_of_compressed_features(image_ids, features_list, connection):
