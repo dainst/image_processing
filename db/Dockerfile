@@ -23,10 +23,15 @@ RUN echo "CREATE database if not exists $DB_NAME CHARACTER SET utf8 COLLATE utf8
 
 COPY table_setup/image_files.sql /docker-entrypoint-initdb.d/000001_image_files.sql
 COPY table_setup/image_features.sql /docker-entrypoint-initdb.d/000002_image_feature.sql
-COPY table_setup/image_neighbours.sql /docker-entrypoint-initdb.d/000003_image_neighbours.sql
+COPY table_setup/image_features_uncompressed.sql /docker-entrypoint-initdb.d/000003_image_feature_uncompressed.sql
+COPY table_setup/image_neighbours.sql /docker-entrypoint-initdb.d/000004_image_neighbours.sql
+COPY table_setup/image_neighbours_uncompressed.sql  /docker-entrypoint-initdb.d/000005_image_neighbours_uncompressed.sql
+
 
 RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000001_image_files.sql)" > /docker-entrypoint-initdb.d/000001_image_files.sql
 RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000002_image_feature.sql)" > /docker-entrypoint-initdb.d/000002_image_feature.sql
-RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000003_image_neighbours.sql)" > /docker-entrypoint-initdb.d/000003_image_neighbours.sql
+RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000003_image_feature_uncompressed.sql)" > /docker-entrypoint-initdb.d/000003_image_feature_uncompressed.sql
+RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000004_image_neighbours.sql)" > /docker-entrypoint-initdb.d/000004_image_neighbours.sql
+RUN echo "USE $DB_NAME;\n$(cat /docker-entrypoint-initdb.d/000005_image_neighbours_uncompressed.sql)" > /docker-entrypoint-initdb.d/000005_image_neighbours_uncompressed.sql
 
 EXPOSE 3306
