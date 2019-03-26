@@ -38,16 +38,6 @@ def image_count():
     return jsonify(query_result)
 
 
-@app.route('/image_name/<image_id>', methods=['GET'])
-def image_name(image_id):
-    connection = get_connection()
-
-    app.logger.debug(f'Image {image_id} requested.')
-    query_result = mariadb.get_image_name(image_id, connection)
-    connection.close()
-    return jsonify(query_result)
-
-
 @app.route('/image_fingerprint/<image_id>', methods=['GET'])
 def image_fingerprint(image_id):
     connection = get_connection()
