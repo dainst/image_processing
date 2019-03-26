@@ -45,6 +45,17 @@ def get_files_data(offset, limit, connection):
     return result
 
 
+def get_all_files_data(connection):
+
+    statement = 'SELECT * FROM `image_files`'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+
 def write_file_names(file_list, connection):
     cursor = connection.cursor()    
 
@@ -97,6 +108,17 @@ def write_file_features(image_id, features, connection):
     connection.commit()
 
 
+def get_all_file_features(connection):
+    statement = 'SELECT * FROM `image_features`;'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchall()
+    cursor.close()
+
+    return result
+
+
 def write_uncompressed_file_features(image_id, features, connection):
 
     statement = 'INSERT IGNORE INTO `image_features_uncompressed` (`image_id`, `features`) VALUES (%s, %s);'
@@ -109,24 +131,35 @@ def write_uncompressed_file_features(image_id, features, connection):
     connection.commit()
 
 
-def write_batch_of_compressed_features(image_ids, features_list, connection):
-
-    statement = 'INSERT IGNORE INTO `image_features_compressed` (`image_id`, `features`) VALUES'
-
-    for idx, image_id in enumerate(image_ids):
-        if idx != 0:
-            statement += ','
-        statement += '("' + str(image_id) + '", "' + json.dumps(features_list[idx].tolist()) + '")'
-    statement += ';'
+def get_all_file_features_uncompressed(connection):
+    statement = 'SELECT * FROM `image_features_uncompressed`;'
 
     cursor = connection.cursor()
     cursor.execute(statement)
-    connection.commit()
+    result = cursor.fetchall()
     cursor.close()
+
+    return result
+
+
+# def write_batch_of_compressed_features(image_ids, features_list, connection):
+#
+#     statement = 'INSERT IGNORE INTO `image_features_compressed` (`image_id`, `features`) VALUES'
+#
+#     for idx, image_id in enumerate(image_ids):
+#         if idx != 0:
+#             statement += ','
+#         statement += '("' + str(image_id) + '", "' + json.dumps(features_list[idx].tolist()) + '")'
+#     statement += ';'
+#
+#     cursor = connection.cursor()
+#     cursor.execute(statement)
+#     connection.commit()
+#     cursor.close()
 
 
 def get_image_count(connection):
-    statement = 'SELECT count(*) FROM `image_names`;'
+    statement = 'SELECT count(*) FROM `image_files`;'
 
     cursor = connection.cursor()
     cursor.execute(statement)
@@ -219,55 +252,92 @@ def get_compressed_feature_batch(offset, batch_size, connection):
 
 def write_neighbours(image_id, neighbours, connection):
     statement = 'INSERT IGNORE INTO `image_neighbours` (`image_id`, `neighbours`) ' \
-                'VALUES (' + str(image_id) + ', "' + json.dumps(neighbours) + '");'
+                'VALUES (%s, %s);'
+
+    values = (str(image_id), json.dumps(neighbours))
 
     cursor = connection.cursor()
-    cursor.execute(statement)
-    connection.commit()
+    cursor.execute(statement, values)
     cursor.close()
 
+    connection.commit()
 
-def write_compressed_neighbours(image_id, neighbours, connection):
-    statement = 'INSERT IGNORE INTO `image_neighbours_compressed` (`image_id`, `neighbours`) ' \
-                'VALUES (' + str(image_id) + ', "' + json.dumps(neighbours) + '");'
+
+def write_uncompressed_neighbours(image_id, neighbours, connection):
+    statement = 'INSERT IGNORE INTO `image_neighbours_uncompressed` (`image_id`, `neighbours`) ' \
+                'VALUES (%s, %s);'
+
+    values = (str(image_id), json.dumps(neighbours))
 
     cursor = connection.cursor()
-    cursor.execute(statement)
-    connection.commit()
+    cursor.execute(statement, values)
     cursor.close()
 
+    connection.commit()
 
-def get_image_name(image_id, connection):
-    statement = 'SELECT `image_names`.`file_name` FROM `image_names` WHERE `image_names`.`id`=%s;'
 
-    try:
-        cursor = connection.cursor()
-        cursor.execute(statement, (image_id,))
-        image_name = cursor.fetchone()
-        cursor.close()
-        return image_name
-    except TypeError:
-        logger.debug(statement)
-        logger.debug(image_id)
+# def get_image_name(image_id, connection):
+#     statement = 'SELECT `image_names`.`file_name` FROM `image_names` WHERE `image_names`.`id`=%s;'
+#
+#     try:
+#         cursor = connection.cursor()
+#         cursor.execute(statement, (image_id,))
+#         image_name = cursor.fetchone()
+#         cursor.close()
+#         return image_name
+#     except TypeError:
+#         logger.debug(statement)
+#         logger.debug(image_id)
 
 
 def get_image_and_neigbours_by_id(image_id, connection):
-    statement = 'SELECT `image_names`.`file_name`, `image_neighbours_compressed`.`neighbours` FROM `image_names`, `image_neighbours_compressed` WHERE `image_names`.`id`=%s AND `image_neighbours_compressed`.`image_id`=`image_names`.`id`;'
+    statement = 'SELECT ' \
+                'image_files.name, ' \
+                'image_files.url, ' \
+                'image_neighbours.neighbours, ' \
+                'image_neighbours_uncompressed.neighbours ' \
+                'FROM image_files, image_neighbours, image_neighbours_uncompressed ' \
+                'WHERE image_files.`id`=%s ' \
+                'AND `image_neighbours`.`image_id`=`image_files`.`id` ' \
+                'AND `image_neighbours_uncompressed`.`image_id`=`image_files`.`id`;'
 
     try:
         cursor = connection.cursor()
         cursor.execute(statement, (image_id,))
-        (image_name, neighbours_data) = cursor.fetchone()
-        cursor.close()
+        (image_name, image_url, neighbours_data, neighbours_uncompressed_data) = cursor.fetchone()
         parsed_json = json.loads(neighbours_data)
+
         neighbours = []
         for neighbour in parsed_json:
+
+            statement = 'SELECT image_files.name, image_files.url FROM image_files WHERE image_files.id = %s;'
+            cursor.execute(statement, (neighbour[0],))
+            (neighbour_name, neighbour_url) = cursor.fetchone()
+
             neighbours.append({
                 'id': neighbour[0],
-                'distance': neighbour[1]
+                'distance': neighbour[1],
+                'name': neighbour_name,
+                'url': neighbour_url
             })
 
-        return image_name, neighbours
+        parsed_uncompressed_json = json.loads(neighbours_uncompressed_data)
+        neighbours_uncompressed = []
+        for neighbour in parsed_uncompressed_json:
+
+            statement = 'SELECT image_files.name, image_files.url FROM image_files WHERE image_files.id = %s;'
+            cursor.execute(statement, (neighbour[0],))
+            (neighbour_name, neighbour_url) = cursor.fetchone()
+
+            neighbours_uncompressed.append({
+                'id': neighbour[0],
+                'distance': neighbour[1],
+                'name': neighbour_name,
+                'url': neighbour_url
+            })
+        cursor.close()
+        return image_name, image_url, neighbours, neighbours_uncompressed
+
     except TypeError:
         logger.debug('No result for:')
         logger.debug(statement)

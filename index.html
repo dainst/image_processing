@@ -4,11 +4,19 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>Image processing demo</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+          integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+          integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+          crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+          integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+          crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
   <style type="text/css">
     img#main-image {
@@ -22,207 +30,153 @@
   </style>
 
   <script typeof="text/javascript">
-      var imageCount = 0;
-      var selectedImage = -1;
-      var arachnePath = 'https://arachne.dainst.org/data';
-      // var flaskPath = 'data/'; // Deployment
-      var flaskPath = 'http://localhost:5000/'; // Development
-      var hashRegex = /#(\d+)/;
+    var imageCount = 0;
+    var selectedImageId = -1;
+    var arachnePath = 'https://arachne.dainst.org';
+    // var flaskPath = 'data/'; // Deployment
+    var flaskPath = 'http://localhost:5000/'; // Development
+    var hashRegex = /#(\d+)/;
 
-      function getArachneImageData(imageName, callback) {
-          var xobj = new XMLHttpRequest();
-          xobj.open('GET', arachnePath + '/search?q=' + imageName);
-          xobj.onreadystatechange = function () {
-              if (xobj.readyState === 4) {
+    function setMainImage(imageName, imageUrl, element) {
+      var imageElement = element.querySelector('img');
+      var linkElement = element.querySelector('a');
 
-                  if (xobj.status === 200) {
-                      callback(JSON.parse(xobj.responseText))
-                  }
-                  else {
-                      console.dir('Status : ' + xobj.status + ' for image ' + imageName);
-                      callback(false);
-                  }
-              }
-          };
-          xobj.send(null);
-      }
-      
-      function setMainImage(imageName, element) {
-          var imageElement = element.querySelector('img');
-          var linkElement = element.querySelector('a');
-          var textElement = element.querySelector('small');
-
-          var imageUrl;
-          var linkUrl;
-          var linkText;
-          var smallText;
-
-          getArachneImageData(imageName, function (searchJson) {
-              if (searchJson === false) {
-                  imageElement.src = 'icons/question-circle-solid.svg';
-                  linkText = 'Failed to load Arachne data.';
-                  smallText = '-';
-              }
-              else if (!searchJson['entities']) {
-                  imageUrl = 'icons/key-solid.svg';
-                  linkText = 'Failed to load Arachne data.';
-                  linkUrl = arachnePath.substr(0, arachnePath.indexOf('/data')) + '/search?q=' + imageName;
-                  smallText = 'No viewing of restricted Arachne images at this point.';
-              }
-              else {
-                  imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId'];
-                  linkUrl = arachnePath.substr(0, arachnePath.indexOf('/data')) + '/entity/' + searchJson['entities'][0]['entityId'];
-                  linkText = 'Arachne <i class="fas fa-external-link-alt"></i>';
-                  smallText = searchJson['entities'][0]['title'];
-              }
-
-              imageElement.src = imageUrl;
-              linkElement.href = linkUrl;
-              linkElement.innerHTML = linkText;
-              textElement.innerHTML = smallText;
-          })
+      if (imageUrl === null) {
+        imageUrl = 'icons/key-solid.svg';
       }
 
-      function setNeighbourImage(imageId, imageName, linkElement) {
-          var imageElement = linkElement.querySelector('img');
+      imageElement.src = imageUrl;
+      linkElement.innerHTML = "<i class=\"fas fa-external-link-alt\"></i> " + imageName;
+      linkElement.href = arachnePath + '/search?q=' + imageName;
+    }
 
-          var imageUrl;
+    function setNeighbourImage(imageId, imageName, imageUrl, element) {
+      var imageElement = element.querySelector('img');
 
-          getArachneImageData(imageName, function (searchJson) {
-              if (searchJson === false) {
-                  imageElement.src = 'icons/question-circle-solid.svg';
-              }
-              else if (!searchJson['entities']) {
-                  imageUrl = 'icons/key-solid.svg';
-              }
-              else {
-                  imageUrl = arachnePath + '/image/' + searchJson['entities'][0]['entityId'];
-              }
-
-              imageElement.src = imageUrl;
-              linkElement.onclick = function () {
-                  updateHash(imageId);
-              };
-          })
+      if (imageUrl === null) {
+        imageUrl = 'icons/key-solid.svg';
       }
 
-      function getImageName(id, neighbourNumber) {
-          var xobj = new XMLHttpRequest();
-          xobj.overrideMimeType('application/json');
-          xobj.open('GET', flaskPath + 'image_name/' + id, true);
-          xobj.onreadystatechange = function () {
-              if (xobj.readyState === 4 && xobj.status === 200) {
-                  var imageElement = document.querySelector('#neighbour-' + String(neighbourNumber + 1));
-                  var imageData = JSON.parse(xobj.responseText);
-                  setNeighbourImage(id, imageData[0], imageElement);
-              }
-          };
-          xobj.send(null);
-      }
-
-      function getCurrentImageNameAndNeighbours() {
-
-          setPlaceHolders();
-
-          var xobj = new XMLHttpRequest();
-          xobj.overrideMimeType('application/json');
-          xobj.open('GET', flaskPath + 'image_name_and_neighbours/' + selectedImage, true);
-          xobj.onreadystatechange = function () {
-              if (xobj.readyState === 4 && xobj.status === 200) {
-                  var imageData = JSON.parse(xobj.responseText);
-                  var mainImageElement = document.querySelector('#main-card');
-
-                  if(imageData.length === 0) {
-                      // TODO: High ID images get empty results from service
-                      console.log('No data for image #' + selectedImage + "!");
-                      return;
-                  }
-
-                  setMainImage(imageData[0], mainImageElement);
-                  for (var i = 0; i < 20; i++) {
-                      getImageName(imageData[1][i]['id'], i);
-                  }
-              }
-          };
-          xobj.send(null);
-      }
-
-      function readHash() {
-          if(window.location.hash) {
-              selectedImage = hashRegex.exec(window.location.hash)[1];
-              if (selectedImage > imageCount) {
-                  selectedImage = imageCount;
-              } else if (selectedImage < 1) {
-                  selectedImage = 1;
-              }
-          } else {
-              console.log('No hash, setting to first image...');
-              selectedImage = 1;
-          }
-      }
-
-      function updateHash(id) {
-          window.location.hash = '#' + id;
-      }
-
-      function setPlaceHolders() {
-          var image_elements = document.querySelectorAll('img');
-
-          for(var i = 0; i < image_elements.length; i++){
-              image_elements[i].src = 'https://arachne.dainst.org/img/placeholder/placeholderNoImage.png';
-          }
-      }
-
-      window.onhashchange = function () {
-          var value = hashRegex.exec(window.location.hash)[1];
-
-          if (value > imageCount) {
-              selectedImage = imageCount;
-          } else if (value < 1) {
-              selectedImage = 1;
-          } else {
-              selectedImage = value;
-          }
-          getCurrentImageNameAndNeighbours();
+      imageElement.src = imageUrl;
+      element.onclick = function () {
+        updateHash(imageId);
       };
+    }
 
-      function init() {
+    function getCurrentImageNameAndNeighbours() {
 
-          var xobj = new XMLHttpRequest();
-          xobj.overrideMimeType('application/json');
-          xobj.open('GET', flaskPath + 'image_count', true);
-          xobj.onreadystatechange = function () {
-              if (xobj.readyState === 4 && xobj.status === 200) {
-                  imageCount = JSON.parse(xobj.responseText);
-                  readHash();
-                  getCurrentImageNameAndNeighbours()
-              }
-          };
-          xobj.send(null);
-      }
+      setPlaceHolders();
 
-      function decreaseImageIndex() {
-          var newValue = parseInt(selectedImage) - 1;
-          if (newValue < 1) {
-              newValue = 1;
+      var xobj = new XMLHttpRequest();
+      xobj.overrideMimeType('application/json');
+      xobj.open('GET', flaskPath + 'image_name_and_neighbours/' + selectedImageId, true);
+      xobj.onreadystatechange = function () {
+        if (xobj.readyState === 4 && xobj.status === 200) {
+          var imageData = JSON.parse(xobj.responseText);
+          var mainImageElement = document.querySelector('#main-card');
+
+          if (imageData.length === 0) {
+            // TODO: High ID images get empty results from service
+            console.log('No data for image #' + selectedImageId + "!");
+            return;
           }
-          updateHash(newValue);
-      }
 
-      function setRandomImage() {
-          var newValue = Math.floor(Math.random() * imageCount);
-          updateHash(newValue);
-      }
+          setMainImage(imageData[0], imageData[1], mainImageElement);
 
-      function increaseImageIndex() {
-          var newValue = parseInt(selectedImage) + 1;
-          if (newValue > imageCount) {
-              newValue = imageCount
+          for (var i = 0; i < 9; i++) {
+            setNeighbourImage(
+                    imageData[2][i].id,
+                    imageData[2][i].name,
+                    imageData[2][i].url,
+                    document.querySelector('#neighbour-' + String(i + 1)));
+
+            setNeighbourImage(
+                    imageData[3][i].id,
+                    imageData[3][i].name,
+                    imageData[3][i].url,
+                    document.querySelector('#neighbour-uncompressed-' + String(i + 1)));
           }
-          updateHash(newValue);
-      }
+        }
+      };
+      xobj.send(null);
+    }
 
-      init()
+    function readHash() {
+      if (window.location.hash) {
+        selectedImageId = hashRegex.exec(window.location.hash)[1];
+        if (selectedImageId > imageCount) {
+          selectedImageId = imageCount;
+        } else if (selectedImageId < 1) {
+          selectedImageId = 1;
+        }
+      } else {
+        console.log('No hash, setting to first image...');
+        selectedImageId = 1;
+      }
+    }
+
+    function updateHash(id) {
+      window.location.hash = '#' + id;
+    }
+
+    function setPlaceHolders() {
+      var image_elements = document.querySelectorAll('img');
+
+      for (var i = 0; i < image_elements.length; i++) {
+        image_elements[i].src = 'https://arachne.dainst.org/img/placeholder/placeholderNoImage.png';
+      }
+    }
+
+    window.onhashchange = function () {
+      var value = hashRegex.exec(window.location.hash)[1];
+
+      if (value > imageCount) {
+        selectedImageId = imageCount;
+      } else if (value < 1) {
+        selectedImageId = 1;
+      } else {
+        selectedImageId = value;
+      }
+      getCurrentImageNameAndNeighbours();
+    };
+
+    function init() {
+
+      var xobj = new XMLHttpRequest();
+      xobj.overrideMimeType('application/json');
+      xobj.open('GET', flaskPath + 'image_count', true);
+      xobj.onreadystatechange = function () {
+        if (xobj.readyState === 4 && xobj.status === 200) {
+          imageCount = JSON.parse(xobj.responseText);
+          readHash();
+          getCurrentImageNameAndNeighbours()
+        }
+      };
+      xobj.send(null);
+    }
+
+    function decreaseImageIndex() {
+      var newValue = parseInt(selectedImageId) - 1;
+      if (newValue < 1) {
+        newValue = 1;
+      }
+      updateHash(newValue);
+    }
+
+    function setRandomImage() {
+      var newValue = Math.floor(Math.random() * imageCount);
+      updateHash(newValue);
+    }
+
+    function increaseImageIndex() {
+      var newValue = parseInt(selectedImageId) + 1;
+      if (newValue > imageCount) {
+        newValue = imageCount
+      }
+      updateHash(newValue);
+    }
+
+    init()
   </script>
 
 </head>
@@ -247,33 +201,39 @@
       <div class="card-body">
         <h5 class="card-title">
           <a href="" id="main-link" target="_blank"></a></h5>
-        <p class="card-text"><small class="text-muted">-</small></p>
       </div>
     </div>
   </div>
 
   <br/>
   <div class="row">
-    <span id="neighbour-1"><img class="neighbour" src=""></span>
-    <span id="neighbour-2"><img class="neighbour" src=""></span>
-    <span id="neighbour-3"><img class="neighbour" src=""></span>
-    <span id="neighbour-4"><img class="neighbour" src=""></span>
-    <span id="neighbour-5"><img class="neighbour" src=""></span>
-    <span id="neighbour-6"><img class="neighbour" src=""></span>
-    <span id="neighbour-7"><img class="neighbour" src=""></span>
-    <span id="neighbour-8"><img class="neighbour" src=""></span>
-    <span id="neighbour-9"><img class="neighbour" src=""></span>
-    <span id="neighbour-10"><img class="neighbour" src=""></span>
-    <span id="neighbour-11"><img class="neighbour" src=""></span>
-    <span id="neighbour-12"><img class="neighbour" src=""></span>
-    <span id="neighbour-13"><img class="neighbour" src=""></span>
-    <span id="neighbour-14"><img class="neighbour" src=""></span>
-    <span id="neighbour-15"><img class="neighbour" src=""></span>
-    <span id="neighbour-16"><img class="neighbour" src=""></span>
-    <span id="neighbour-17"><img class="neighbour" src=""></span>
-    <span id="neighbour-18"><img class="neighbour" src=""></span>
-    <span id="neighbour-19"><img class="neighbour" src=""></span>
-    <span id="neighbour-20"><img class="neighbour" src=""></span>
+    <div class="col-md-6">
+      <h3>Compressed</h3>
+      <footer class="blockquote-footer">32 feature values per image</footer>
+
+      <span id="neighbour-1"><img class="neighbour" src=""></span>
+      <span id="neighbour-2"><img class="neighbour" src=""></span>
+      <span id="neighbour-3"><img class="neighbour" src=""></span>
+      <span id="neighbour-4"><img class="neighbour" src=""></span>
+      <span id="neighbour-5"><img class="neighbour" src=""></span>
+      <span id="neighbour-6"><img class="neighbour" src=""></span>
+      <span id="neighbour-7"><img class="neighbour" src=""></span>
+      <span id="neighbour-8"><img class="neighbour" src=""></span>
+      <span id="neighbour-9"><img class="neighbour" src=""></span>
+    </div>
+    <div class="col-md-6">
+      <h3>Uncompressed</h3>
+      <footer class="blockquote-footer">2048 feature values per image</footer>
+      <span id="neighbour-uncompressed-1"><img class="neighbour" src=""/></span>
+      <span id="neighbour-uncompressed-2"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-3"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-4"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-5"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-6"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-7"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-8"><img class="neighbour" src=""></span>
+      <span id="neighbour-uncompressed-9"><img class="neighbour" src=""></span>
+    </div>
   </div>
 </div>
 </body>
