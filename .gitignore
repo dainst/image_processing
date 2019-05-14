@@ -1,8 +1,11 @@
 # Python
 __pycache__/
+.ipynb_checkpoints/
 
 # Docker configuration
 .env
 
 # MariaDB directory created by Docker
 db_data/*
+
+model/encoder.h5
