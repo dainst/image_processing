@@ -61,6 +61,8 @@ def create_features(image_list):
 
     logger.info("Creating features...")
 
+    model = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
+
     # Create training and test features
     counter = 1
     for path in image_list:
@@ -154,7 +156,6 @@ def start(host, port, database, user, password, n):
 
 if __name__ == "__main__":
     options = vars(parser.parse_args())
-    model = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
 
     start(options['db_host'], options['db_port'], options['db_name'], options['db_user'],
           options['db_password'], options['nth_image'])
