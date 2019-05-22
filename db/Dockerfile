@@ -1,4 +1,4 @@
-FROM mariadb
+FROM mariadb:10.4.4
 
 ENV REFRESHED_AT 2018-06-27
 LABEL maintainer="Deutsches Archäologisches Institut: dev@dainst.de"
@@ -8,8 +8,8 @@ ARG DB_ROOT_PW
 ARG DB_USER
 ARG DB_PASSWORD
 
-RUN apt-get update
-RUN apt-get install -y locales
+RUN apt update
+RUN apt install -y locales
 RUN rm -rf /var/lib/apt/lists/* $
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
