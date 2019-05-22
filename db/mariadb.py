@@ -55,6 +55,17 @@ def get_all_files_data(connection):
     return result
 
 
+def get_all_file_paths(connection):
+
+    statement = 'SELECT `path` FROM `image_files`'
+
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+
 def write_file_features(image_id, features, connection):
 
     statement = 'INSERT IGNORE INTO `image_features` (`image_id`, `features`) VALUES (%s, %s);'
