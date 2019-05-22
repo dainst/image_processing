@@ -24,13 +24,12 @@ def is_readable_directory(path: str):
 
 
 parser = argparse.ArgumentParser(description="Create features for files in source directory.")
-parser.add_argument('-s', '--source', type=is_readable_directory, required=True,
-                    help="specify input directory.")
-parser.add_argument('-h', '--db_host', required=True, help="specify mariadb host.")
-parser.add_argument('-p', '--db_port', required=True, help="specify mariadb port.")
-parser.add_argument('-d', '--db_name', required=True, help="specify mariadb database.")
-parser.add_argument('-u', '--db_user', required=True, help="specify mariadb user.")
-parser.add_argument('-p', '--db_password', required=True, help="specify mariadb password.")
+parser.add_argument('source', type=is_readable_directory, help="specify input directory.")
+parser.add_argument('db_host', help="specify mariadb host.")
+parser.add_argument('db_port', type=int, help="specify mariadb port.")
+parser.add_argument('db_name', help="specify mariadb database.")
+parser.add_argument('db_user', help="specify mariadb user.")
+parser.add_argument('db_password', help="specify mariadb password.")
 parser.add_argument('-n', '--nth_image', default=1,
                     help="only keep every nth image found in source directory, default: 1 (every image)")
 
@@ -103,7 +102,7 @@ if __name__ == "__main__":
     shuffle(image_path_list)
 
     image_path_list = image_path_list[::options['nth_image']]
-    logger.info(f'{len(image_path_list)} images used.')
+    logger.info(f'{len(image_path_list)} images are used.')
 
-    process_image_list(image_path_list)
-
+    process_image_list(image_path_list, options['db_host'], options['db_port'], options['db_name'], options['db_user'],
+                       options['db_password'])
