@@ -30,7 +30,7 @@ parser.add_argument('db_port', type=int, help="specify mariadb port.")
 parser.add_argument('db_name', help="specify mariadb database.")
 parser.add_argument('db_user', help="specify mariadb user.")
 parser.add_argument('db_password', help="specify mariadb password.")
-parser.add_argument('-n', '--nth_image', default=1,
+parser.add_argument('-n', '--nth_image', type=int, default=1,
                     help="only keep every nth image found in source directory, default: 1 (every image)")
 
 
