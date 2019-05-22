@@ -1,7 +1,11 @@
 import argparse
 import logging
 import os
+import pickle
 import numpy as np
+from datetime import datetime
+
+
 import keras
 
 from keras.applications.resnet50 import preprocess_input
@@ -124,6 +128,9 @@ def train_autoencoder(training_features, test_features):
 
     history = m.fit(training_features, training_features, batch_size=128, epochs=100000, verbose=1,
                     validation_data=(test_features, test_features), callbacks=callbacks_list)
+
+    with open('model/autoencoder_training_history_' + datetime.today().strftime('%Y-%m-%d'), 'wb') as history_file:
+        pickle.dump(history.history, history_file)
 
     best_model = load_model('model/best_model.h5', custom_objects={'euclidean_distance_loss': euclidean_distance_loss})
     encoder = Model(best_model.input, best_model.get_layer('bottleneck').output)

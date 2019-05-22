@@ -8,4 +8,5 @@ __pycache__/
 # MariaDB directory created by Docker
 db_data/*
 
-model/encoder.h5
+model/*
+!model/README.md
