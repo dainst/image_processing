@@ -23,7 +23,7 @@ def is_readable_directory(path: str):
         return path
 
 
-parser = argparse.ArgumentParser(description="Create features for files in source directory.")
+parser = argparse.ArgumentParser(description="Scan for images in the source directory.")
 parser.add_argument('source', type=is_readable_directory, help="specify input directory.")
 parser.add_argument('db_host', help="specify mariadb host.")
 parser.add_argument('db_port', type=int, help="specify mariadb port.")
