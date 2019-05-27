@@ -27,22 +27,11 @@ parser.add_argument('db_user', help="specify mariadb user.")
 parser.add_argument('db_password', help="specify mariadb password.")
 
 
-def euclidean_distance_loss(y_true, y_pred):
-    """
-    Euclidean distance loss
-    https://en.wikipedia.org/wiki/Euclidean_distance
-    :param y_true: TensorFlow/Theano tensor
-    :param y_pred: TensorFlow/Theano tensor of the same shape as y_true
-    :return: float
-    """
-    return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
-
-
 def create_features(model_path, host, port, database, user, password):
     logger.info("Loading models...")
     res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
 
-    encoder = load_model(model_path, custom_objects={'euclidean_distance_loss': euclidean_distance_loss})
+    encoder = load_model(model_path)
 
     logger.info("Combining models...")
     combined = Model(inputs=res_net.input, outputs=encoder(res_net.output))
