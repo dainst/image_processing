@@ -89,6 +89,35 @@ def get_all_file_features(connection):
     return result
 
 
+def get_every_nth_index_for_table(connection, n, tablename):
+
+    statement = f"SELECT * FROM (SELECT @row := @row +1 AS row_num " \
+                f"FROM (SELECT @row :=0) r, {tablename}) ranked WHERE row_num MOD %s = 1"
+
+    values = (n,)
+
+    cursor = connection.cursor()
+    cursor.execute(statement, values)
+    result = cursor.fetchall()
+    cursor.close()
+
+    return [int(i[0]) for i in result]
+
+
+def get_every_nth_file_feature(connection, n):
+    indices = get_every_nth_index_for_table(connection, n, "image_features")
+
+    format_string = ','.join(['%s'] * len(indices))
+    statement = f"SELECT * FROM image_features WHERE image_id in ({format_string})"
+
+    cursor = connection.cursor()
+    cursor.execute(statement, indices)
+    result = cursor.fetchall()
+    cursor.close()
+
+    return result
+
+
 def write_uncompressed_file_features(image_id, features, connection):
 
     statement = 'INSERT IGNORE INTO `image_features_uncompressed` (`image_id`, `features`) VALUES (%s, %s);'
@@ -112,6 +141,20 @@ def get_all_file_features_uncompressed(connection):
     return result
 
 
+def get_every_nth_file_feature_uncompressed(connection, n):
+    indices = get_every_nth_index_for_table(connection, n, "image_features_uncompressed")
+
+    format_string = ','.join(['%s'] * len(indices))
+    statement = f"SELECT * FROM image_features_uncompressed WHERE image_id in ({format_string})"
+
+    cursor = connection.cursor()
+    cursor.execute(statement, indices)
+    result = cursor.fetchall()
+    cursor.close()
+
+    return result
+
+
 def get_image_count(connection):
     statement = 'SELECT count(*) FROM `image_files`;'
 
@@ -121,6 +164,22 @@ def get_image_count(connection):
     cursor.close()
 
     return result[0]
+
+
+def get_images_with_neighbours(connection):
+    cursor = connection.cursor()
+
+    statement = "SELECT image_id FROM image_neighbours;"
+    cursor.execute(statement)
+    compressed = cursor.fetchall()
+
+    statement = "SELECT image_id FROM image_neighbours_uncompressed;"
+    cursor.execute(statement)
+    uncompressed = cursor.fetchall()
+
+    cursor.close()
+
+    return [i[0] for i in compressed], [i[0] for i in uncompressed]
 
 
 def get_feature_count(connection):

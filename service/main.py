@@ -38,6 +38,15 @@ def image_count():
     return jsonify(query_result)
 
 
+@app.route('/images_with_neighbours', methods=['GET'])
+def images_with_neighbours_count():
+    connection = get_connection()
+    query_result = mariadb.get_images_with_neighbours(connection)
+    connection.close()
+
+    return jsonify({"compressed": query_result[0], "uncompressed": query_result[1]})
+
+
 @app.route('/image_fingerprint/<image_id>', methods=['GET'])
 def image_fingerprint(image_id):
     connection = get_connection()
