@@ -92,7 +92,7 @@ def get_all_file_features(connection):
 def get_every_nth_index_for_table(connection, n, tablename):
 
     statement = f"SELECT * FROM (SELECT @row := @row +1 AS row_num " \
-                f"FROM (SELECT @row :=0) r, {tablename}) ranked WHERE row_num MOD %s = 1"
+                f"FROM (SELECT @row :=0) r, {tablename}) ranked WHERE row_num MOD %s = 0"
 
     values = (n,)
 
