@@ -31,7 +31,9 @@
 
   <script typeof="text/javascript">
     var imageCount = 0;
-    var selectedImageId = -1;
+    var idsImagesCompressed = [];
+    var idsImagesUncompressed = [];
+    var selectedImageIndex = -1;
     var arachnePath = 'https://arachne.dainst.org';
     // var flaskPath = 'data/'; // Deployment
     var flaskPath = 'http://localhost:5000/'; // Development
@@ -69,7 +71,7 @@
 
       var xobj = new XMLHttpRequest();
       xobj.overrideMimeType('application/json');
-      xobj.open('GET', flaskPath + 'image_name_and_neighbours/' + selectedImageId, true);
+      xobj.open('GET', flaskPath + 'image_name_and_neighbours/' + idsImagesCompressed[selectedImageIndex], true);
       xobj.onreadystatechange = function () {
         if (xobj.readyState === 4 && xobj.status === 200) {
           var imageData = JSON.parse(xobj.responseText);
@@ -77,7 +79,7 @@
 
           if (imageData.length === 0) {
             // TODO: High ID images get empty results from service
-            console.log('No data for image #' + selectedImageId + "!");
+            console.log('No data for image #' + idsImagesCompressed[selectedImageIndex] + "!");
             return;
           }
 
@@ -85,13 +87,13 @@
 
           for (var i = 0; i < 9; i++) {
             setNeighbourImage(
-                    imageData[2][i].id,
+                    idsImagesCompressed.indexOf(imageData[2][i].id),
                     imageData[2][i].name,
                     imageData[2][i].url,
                     document.querySelector('#neighbour-' + String(i + 1)));
 
             setNeighbourImage(
-                    imageData[3][i].id,
+                    idsImagesUncompressed.indexOf(imageData[3][i].id),
                     imageData[3][i].name,
                     imageData[3][i].url,
                     document.querySelector('#neighbour-uncompressed-' + String(i + 1)));
@@ -102,16 +104,16 @@
     }
 
     function readHash() {
-      if (window.location.hash) {
-        selectedImageId = hashRegex.exec(window.location.hash)[1];
-        if (selectedImageId > imageCount) {
-          selectedImageId = imageCount;
-        } else if (selectedImageId < 1) {
-          selectedImageId = 1;
+      if (window.location.hash !== null) {
+        selectedImageIndex = hashRegex.exec(window.location.hash)[1];
+        if (selectedImageIndex > imageCount) {
+          selectedImageIndex = imageCount;
+        } else if (selectedImageIndex < 1) {
+          selectedImageIndex = 1;
         }
       } else {
         console.log('No hash, setting to first image...');
-        selectedImageId = 1;
+        selectedImageIndex = 1;
       }
     }
 
@@ -131,11 +133,11 @@
       var value = hashRegex.exec(window.location.hash)[1];
 
       if (value > imageCount) {
-        selectedImageId = imageCount;
+        selectedImageIndex = imageCount;
       } else if (value < 1) {
-        selectedImageId = 1;
+        selectedImageIndex = 1;
       } else {
-        selectedImageId = value;
+        selectedImageIndex = value;
       }
       getCurrentImageNameAndNeighbours();
     };
@@ -144,10 +146,21 @@
 
       var xobj = new XMLHttpRequest();
       xobj.overrideMimeType('application/json');
-      xobj.open('GET', flaskPath + 'image_count', true);
+      xobj.open('GET', flaskPath + 'images_with_neighbours', true);
       xobj.onreadystatechange = function () {
         if (xobj.readyState === 4 && xobj.status === 200) {
-          imageCount = JSON.parse(xobj.responseText);
+          var response = JSON.parse(xobj.responseText);
+
+          idsImagesCompressed = response['compressed'];
+          idsImagesUncompressed = response['uncompressed'];
+
+          if(idsImagesCompressed.length !== idsImagesUncompressed.length){
+            console.log("Warning the number of neighbours based on compressed and uncompressed differs features:");
+            console.log(idsImagesCompressed.length, idsImagesUncompressed.length)
+          }
+
+          imageCount = idsImagesCompressed.length;
+
           readHash();
           getCurrentImageNameAndNeighbours()
         }
@@ -156,7 +169,7 @@
     }
 
     function decreaseImageIndex() {
-      var newValue = parseInt(selectedImageId) - 1;
+      var newValue = parseInt(selectedImageIndex) - 1;
       if (newValue < 1) {
         newValue = 1;
       }
@@ -169,7 +182,7 @@
     }
 
     function increaseImageIndex() {
-      var newValue = parseInt(selectedImageId) + 1;
+      var newValue = parseInt(selectedImageIndex) + 1;
       if (newValue > imageCount) {
         newValue = imageCount
       }
