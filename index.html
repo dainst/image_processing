@@ -104,16 +104,16 @@
     }
 
     function readHash() {
-      if (window.location.hash !== null) {
+      if (window.location.hash) {
         selectedImageIndex = hashRegex.exec(window.location.hash)[1];
         if (selectedImageIndex > imageCount) {
           selectedImageIndex = imageCount;
-        } else if (selectedImageIndex < 1) {
-          selectedImageIndex = 1;
+        } else if (selectedImageIndex < 0) {
+          updateHash(0);
         }
       } else {
         console.log('No hash, setting to first image...');
-        selectedImageIndex = 1;
+        updateHash(0);
       }
     }
 
@@ -134,8 +134,8 @@
 
       if (value > imageCount) {
         selectedImageIndex = imageCount;
-      } else if (value < 1) {
-        selectedImageIndex = 1;
+      } else if (value < 0) {
+        selectedImageIndex = 0;
       } else {
         selectedImageIndex = value;
       }
@@ -170,8 +170,8 @@
 
     function decreaseImageIndex() {
       var newValue = parseInt(selectedImageIndex) - 1;
-      if (newValue < 1) {
-        newValue = 1;
+      if (newValue < 0) {
+        newValue = 0;
       }
       updateHash(newValue);
     }
