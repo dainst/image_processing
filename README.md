@@ -54,6 +54,10 @@ increasing distance (KNN). The first 100 nearest neighbours are stored in the Ma
 ## (Ugly) demo
 
 * http://virginiaplain08.klassarchaeologie.uni-koeln.de/
-* ~250k images processed.
-* The top image is the current image, followed by the 20 most similar images contained in the set.
-* The first in the list of similar images is always the current image as a sanity check.
+** ~250k images processed.
+** The top image is the current image, followed by the 20 most similar images contained in the set.
+** The first in the list of similar images is always the current image as a sanity check.
+
+* http://virginiaplain08.klassarchaeologie.uni-koeln.de/pixplot
+** clustering results for the same dataset
+** visualized using [PixPlot](https://github.com/YaleDHLab/pix-plot).
