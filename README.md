@@ -51,7 +51,7 @@ python3 group_images.py <db host> <db port> <db name> <db user> <db user passwor
 For each image, the script calculates the euclidean distances to all other images and then sorts the result by 
 increasing distance (KNN). The first 100 nearest neighbours are stored in the MariaDB table `image_neighbours`.
 
-## (Ugly) demo
+## Simple demo
 
 http://virginiaplain08.klassarchaeologie.uni-koeln.de/
 * ~250k images processed.
