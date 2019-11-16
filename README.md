@@ -1,6 +1,6 @@
 # Image processing
 
-Experimental image processing using images from [iDAI.arachne](https://arachne.dainst.org).
+Experimental image processing using images from [iDAI.objects](https://arachne.dainst.org).
 
 ## Prerequisites
 
