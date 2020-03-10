@@ -5,3 +5,4 @@ requests
 requests-futures
 keras
 Pillow
+h5py

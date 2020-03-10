@@ -1,0 +1,64 @@
+import h5py
+
+import argparse
+import logging
+
+import keras
+import numpy as np
+
+from keras.models import load_model, Model
+from keras.preprocessing import image
+from keras.applications.resnet50 import preprocess_input
+import keras.backend as K
+from PIL.Image import DecompressionBombError
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(format="%(asctime)s-%(levelname)s-%(name)s - %(message)s")
+
+
+parser = argparse.ArgumentParser(description="Scan for images in the source directory.")
+parser.add_argument('project', type=str, help="Specifiy project name.")
+
+
+def create_features(project_name):
+    logger.info("Loading models...")
+    res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
+
+    f = h5py.File(f'{project_name}.hdf5', 'r+')
+
+    counter = 1
+    for key in f:
+        g = f[key]
+        image_path = g.attrs['path']
+        try:
+            if counter % 100 == 0:
+                logger.info(f'Progress: {counter}/{len(f.keys())}')
+
+            img = image.load_img(image_path, target_size=(224, 224))
+            img_data = image.img_to_array(img)
+            img_data = np.expand_dims(img_data, axis=0)
+            img_data = preprocess_input(img_data)
+
+            res_net_feature = res_net.predict(img_data)
+            res_net_feature_flattened = np.array(res_net_feature).flatten()
+            features = g.create_dataset("features", data=res_net_feature_flattened)
+            features.attrs['model'] = "keras.applications.resnet50.ResNet50"
+
+            counter += 1
+
+        except OSError as e:
+            logger.error(e)
+        except DecompressionBombError as e:
+            logger.error(e)
+            logger.error(image_path)
+
+    logger.info(f'Done')
+    f.close()
+
+if __name__ == "__main__":
+    options = vars(parser.parse_args())
+
+    create_features(options['project'])
