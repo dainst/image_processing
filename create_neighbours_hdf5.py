@@ -19,7 +19,7 @@ parser.add_argument('-k', '--k_nearest', type=int, default=20,
 
 
 def create_neighbours(project_name, k):
-    f = h5py.File(f'{project_name}.hdf5', 'r+')
+    f = h5py.File(f"./projects/{project_name}.hdf5", 'r+')
 
     features_matrix = []
     image_name_to_id_mapping = {}
@@ -44,12 +44,19 @@ def create_neighbours(project_name, k):
     for group_key in f:
         current_image_id = image_name_to_id_mapping[group_key]
         neighbour_names = [id_to_image_name_mapping[i] for i in neighbours[1][current_image_id]]
-        neighbour_distances = neighbours[1][current_image_id]
+        neighbour_distances = neighbours[0][current_image_id]
 
-        neighbours_group = f[group_key].create_group('neighbours')
+        if 'neighbours' not in f[group_key]:
+            neighbours_group = f[group_key].create_group('neighbours')
+        else:
+            neighbours_group = f[group_key]['neighbours']
+
         for idx, value in enumerate(neighbour_names):
-            g = neighbours_group.create_group(value)
-            g.attrs['distance'] = neighbour_distances[idx]
+            if value not in neighbours_group:
+                g = neighbours_group.create_group(value)
+                g.attrs['distance'] = neighbour_distances[idx]
+            else:
+                neighbours_group[value].attrs['distance'] = neighbour_distances[idx]
 
     logger.info("Done")
     f.close()

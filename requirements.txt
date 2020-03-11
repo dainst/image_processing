@@ -1,8 +1,6 @@
 # pip3 dependencies
-mysqlclient
-matplotlib
-requests
-requests-futures
 keras
 Pillow
 h5py
+Flask
+flask-cors

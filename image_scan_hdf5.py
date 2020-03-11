@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import json
 
 import h5py
 
@@ -30,26 +31,42 @@ valid_image_files = [
 
 def create_image_path_list(root_directory):
     data = []
+
+    if root_directory[-1] != '/':
+        root_directory += "/"
+
     logger.info(f'Collecting JPEGs in directory "{root_directory}".')
     for root, dirs, files in os.walk(root_directory):
         for file in files:
             for valid_image_file_suffix in valid_image_files:
                 if file.lower().endswith(valid_image_file_suffix):
-                    data.append((file, os.path.abspath(f'{root}/{file}')))
+                    relative_path = f"{root.replace(root_directory, '')}/{file}"
+                    data += [(file, relative_path)]
                     break
+
     logger.info(f'{len(data)} images found.')
 
     return data
 
 
-if __name__ == "__main__":
-    options = vars(parser.parse_args())
-    image_path_list = create_image_path_list(options['source'])
+def start(source_directory, project_name):
 
-    f = h5py.File(f"{options['project']}.hdf5", "w")
+    image_path_list = create_image_path_list(source_directory)
+    with open(f"./projects/{project_name}.info", "w") as info:
+        data = {
+            "initial_absolute_path": os.path.abspath(source_directory)
+        }
+        info.write(json.dumps(data))
+
+    f = h5py.File(f"./projects/{project_name}.hdf5", "w")
 
     for image_path in image_path_list:
         g = f.create_group(image_path[0])
         g.attrs['path'] = image_path[1]
 
     f.close()
+
+
+if __name__ == "__main__":
+    options = vars(parser.parse_args())
+    start(options['source'], options['project'])

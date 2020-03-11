@@ -10,3 +10,6 @@ db_data/*
 
 model/*
 !model/README.md
+
+projects/*.hdf5
+projects/*.info

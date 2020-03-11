@@ -2,14 +2,13 @@ import h5py
 
 import argparse
 import logging
+import json
 
 import keras
 import numpy as np
 
-from keras.models import load_model, Model
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input
-import keras.backend as K
 from PIL.Image import DecompressionBombError
 
 
@@ -17,7 +16,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logging.basicConfig(format="%(asctime)s-%(levelname)s-%(name)s - %(message)s")
-
 
 parser = argparse.ArgumentParser(description="Scan for images in the source directory.")
 parser.add_argument('project', type=str, help="Specifiy project name.")
@@ -27,12 +25,15 @@ def create_features(project_name):
     logger.info("Loading models...")
     res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
 
-    f = h5py.File(f'{project_name}.hdf5', 'r+')
+    f = h5py.File(f'./projects/{project_name}.hdf5', 'r+')
+
+    with open(f"./projects/{project_name}.info", "r") as info:
+        absolute_path = json.loads(info.read())['initial_absolute_path']
 
     counter = 1
     for key in f:
         g = f[key]
-        image_path = g.attrs['path']
+        image_path = f"{absolute_path}/{g.attrs['path']}"
         try:
             if counter % 100 == 0:
                 logger.info(f'Progress: {counter}/{len(f.keys())}')
@@ -51,14 +52,17 @@ def create_features(project_name):
 
         except OSError as e:
             logger.error(e)
+            logger.error(f"Removing {key} from hdf5 dataset.")
+            del f[key]
         except DecompressionBombError as e:
             logger.error(e)
             logger.error(image_path)
+            logger.error(f"Removing {key} from hdf5 dataset.")
+            del f[key]
 
     logger.info(f'Done')
     f.close()
 
-if __name__ == "__main__":
-    options = vars(parser.parse_args())
 
-    create_features(options['project'])
+if __name__ == "__main__":
+    create_features(vars(parser.parse_args()))
