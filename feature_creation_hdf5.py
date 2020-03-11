@@ -31,12 +31,13 @@ def create_features(project_name):
         absolute_path = json.loads(info.read())['initial_absolute_path']
 
     counter = 1
+    key_count = len(f.keys())
     for key in f:
         g = f[key]
         image_path = f"{absolute_path}/{g.attrs['path']}"
         try:
             if counter % 100 == 0:
-                logger.info(f'Progress: {counter}/{len(f.keys())}')
+                logger.info(f'Progress: {counter}/{key_count}')
 
             img = image.load_img(image_path, target_size=(224, 224))
             img_data = image.img_to_array(img)
