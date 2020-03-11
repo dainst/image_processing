@@ -1,49 +1,16 @@
 version: '3.5'
 
 services:
-  mariadb:
-    container_name: ${DB_HOST}
-    build:
-      context: db
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_ROOT_PW: ${DB_ROOT_PW}
-        DB_USER: ${DB_USER}
-        DB_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - '3308:3306'
-    volumes:
-      - ./db_data/mysql:/var/lib/mysql
-    restart: ${RESTART_POLICY} 
-    networks:
-      - network_1
-
   flask:
     container_name: image_processing_service
     build:
       context: ./service
-    environment:
-      PYTHONPATH: /service:/libs
-      DB_HOST: ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5000:5000"
     volumes:
       - ./service:/service
-      - ./db:/libs/db
+      - ./projects:/projects
+      - /home/shohl/Bilder/preliminary:/images/max_haibt
+      - /home/shohl/Bilder/idai_cloud_auswahl:/images/idai_cloud_auswahl
     working_dir: /service
-    depends_on:
-      - mariadb
     restart: ${RESTART_POLICY}
-    networks:
-      - network_1
-
-networks:
-  network_1:
-    name: $NETWORK_NAME
-    driver: bridge
-    ipam:
-        config:
-        - subnet: 192.168.18.1/24
