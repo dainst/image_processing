@@ -18,16 +18,14 @@ images_dir = "/images"
 @app.route('/')
 def index():
 
-    project_files = []
+    available_projects = []
     for root, dirs, files in os.walk(projects_dir):
-        app.logger.warning(os.path.abspath(root))
         for file in files:
-            app.logger.warning(file)
-            if file.lower().endswith(".hdf5"):
-                project_files.append((file, os.path.abspath(f'{root}/{file}')))
+            if file.endswith(".hdf5"):
+                available_projects.append(file[:-5])
                 break
 
-    return jsonify(project_files)
+    return jsonify(available_projects)
 
 
 @app.route("/<project>")
