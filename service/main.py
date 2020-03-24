@@ -23,7 +23,6 @@ def index():
         for file in files:
             if file.endswith(".hdf5"):
                 available_projects.append(file[:-5])
-                break
 
     return jsonify(available_projects)
 
