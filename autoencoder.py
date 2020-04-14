@@ -59,7 +59,7 @@ def train_autoencoder(training_features, test_features, project_name):
     m = Sequential()
 
     m.add(Dense(512, activation='elu', input_shape=(training_features.shape[1],)))
-    m.add(Dense(256, activation='elu', input_shape=(training_features.shape[1],)))
+    m.add(Dense(256, activation='elu'))
     m.add(Dense(32, activation='linear', name="bottleneck"))
     m.add(Dense(256, activation='elu'))
     m.add(Dense(512, activation='elu'))
