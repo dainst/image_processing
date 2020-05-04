@@ -4,3 +4,6 @@ Flask
 flask-cors
 matplotlib
 h5py
+tensorflow
+Pillow
+scikit-learn
