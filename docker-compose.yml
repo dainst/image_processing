@@ -6,11 +6,12 @@ services:
     build:
       context: ./service
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./service:/service
       - ./projects:/projects
       - /home/shohl/Bilder/preliminary:/images/max_haibt
       - /home/shohl/Bilder/idai_cloud_auswahl:/images/idai_cloud_auswahl
+      - /home/shohl/Bilder/mask_images/masks:/images/mask_images
     working_dir: /service
     restart: ${RESTART_POLICY}
