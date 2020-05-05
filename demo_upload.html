@@ -43,15 +43,42 @@
   <br/>
   <div class="row">
    <div class="col-md-12">
-      <span id="neighbour-1"><img class="neighbour" src=""/></span>
-      <span id="neighbour-2"><img class="neighbour" src=""></span>
-      <span id="neighbour-3"><img class="neighbour" src=""></span>
-      <span id="neighbour-4"><img class="neighbour" src=""></span>
-      <span id="neighbour-5"><img class="neighbour" src=""></span>
-      <span id="neighbour-6"><img class="neighbour" src=""></span>
-      <span id="neighbour-7"><img class="neighbour" src=""></span>
-      <span id="neighbour-8"><img class="neighbour" src=""></span>
-      <span id="neighbour-9"><img class="neighbour" src=""></span>
+       <figure id="neighbour-1">
+           <img class="neighbour" src=""/>
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-2">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-3">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-4">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-5">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-6">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-7">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-8">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-9">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
    </div>
   </div>
 </div>
@@ -102,8 +129,9 @@
 
     function setImage(imageName, element) {
         const imageElement = element.querySelector('img');
-
-        imageElement.src = flaskPath() + "/" + imageName;
+        const captionElement = element.querySelector('figcaption');
+        captionElement.textContent = "Distance: " + imageName[1];
+        imageElement.src = flaskPath() + "/" + imageName[0];
     }
 
 </script>

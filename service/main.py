@@ -105,8 +105,10 @@ def upload(project):
     neighbours = nn.kneighbors(res_net_feature_flattened)
 
     neighbour_names = [id_to_image_name_mapping[i] for i in neighbours[1][0]]
+    distances = [i for i in neighbours[0][0]]
+    result = list(zip(neighbour_names, distances))
     app.logger.debug('Done.')
-    return jsonify(neighbour_names)
+    return jsonify(result)
 
 
 @app.route("/<project>/<image_name>")
