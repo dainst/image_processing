@@ -24,6 +24,8 @@ res_net = None
 projects_dir = "/projects"
 images_dir = "/images"
 
+project_cache = {}
+
 
 @app.route('/')
 def index():
@@ -46,55 +48,59 @@ def get_image_names(project):
 @app.route('/<project>/upload', methods=['POST'])
 def upload(project):
     global res_net
-    project_data = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
+    global project_cache
 
-    features_matrix = []
-    image_name_to_id_mapping = {}
-    id_to_image_name_mapping = {}
+    if project in project_cache:
+        (
+            image_name_to_id_mapping,
+            id_to_image_name_mapping,
+            features_matrix
+        ) = project_cache[project]
+    else:
+        project_data = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
 
-    app.logger.debug(f'Loading data for {project}.')
-    for group_key in project_data:
-        image_name_to_id_mapping[group_key] = len(features_matrix)
-        id_to_image_name_mapping[len(features_matrix)] = group_key
+        features_matrix = []
+        image_name_to_id_mapping = {}
+        id_to_image_name_mapping = {}
 
-        features_matrix += [project_data[group_key]['features'][()]]
+        app.logger.debug(f'Loading data for {project}...')
+        for group_key in project_data:
+            image_name_to_id_mapping[group_key] = len(features_matrix)
+            id_to_image_name_mapping[len(features_matrix)] = group_key
+
+            features_matrix += [project_data[group_key]['features'][()]]
+
+        project_cache[project] = (
+            image_name_to_id_mapping,
+            id_to_image_name_mapping,
+            features_matrix)
 
     app.logger.debug('Done.')
 
+    app.logger.debug('Preprocessing uploaded image...')
     file = request.get_data()
-    app.logger.debug(type(file))
+
     img = Image.open(io.BytesIO(file))
     img = img.convert('RGB')
     img = img.resize((224, 224), Image.NEAREST)
     img = image.img_to_array(img)
 
-    app.logger.debug("Loaded...")
-    app.logger.debug(img.shape)
-
     img_data = image.img_to_array(img)
     img_data = np.expand_dims(img_data, axis=0)
     img_data = preprocess_input(img_data)
+    app.logger.debug("Done.")
 
-    app.logger.debug("Preprocessed...")
-    app.logger.debug(img_data.shape)
-
+    app.logger.debug('Predicting nearest neighbours.')
     res_net_feature = res_net.predict(img_data)
     res_net_feature_flattened = np.array(res_net_feature).flatten()
     res_net_feature_flattened = np.expand_dims(res_net_feature_flattened, axis=0)
-
-    app.logger.debug(np.array(features_matrix).shape)
-    app.logger.debug(res_net_feature_flattened.shape)
 
     nn = NearestNeighbors(n_neighbors=10)
     nn.fit(features_matrix)
     neighbours = nn.kneighbors(res_net_feature_flattened)
 
-    # neighbours = [value.tolist() for value in nn.fit(features_matrix).kneighbors()]
-    app.logger.debug(neighbours)
-
     neighbour_names = [id_to_image_name_mapping[i] for i in neighbours[1][0]]
-    app.logger.debug(neighbour_names)
-
+    app.logger.debug('Done.')
     return jsonify(neighbour_names)
 
 
