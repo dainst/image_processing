@@ -104,10 +104,6 @@
         const imageElement = element.querySelector('img');
 
         imageElement.src = flaskPath() + "/" + imageName;
-
-        element.onclick = function () {
-            updateHash(images.indexOf(imageName));
-        };
     }
 
 </script>
