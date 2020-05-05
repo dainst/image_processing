@@ -60,7 +60,11 @@
     const basepath = 'http://localhost:5001/'; // Development
 
     //create the drawingboard by passing it the #id of the wanted container
-    const defaultBoard = new DrawingBoard.Board('drawing-board');
+    const defaultBoard = new DrawingBoard.Board('drawing-board', {
+        background: "#000",
+        color: "#fff",
+        size: 30,
+    });
     defaultBoard.ev.bind('board:stopDrawing', handleDrawing)
 
     function handleDrawing() {
