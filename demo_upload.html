@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Image processing demo</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+          integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+          integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+          crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+          integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+          crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <style type="text/css">
+    img#main-image {
+      height: 500px;
+      width: auto;
+    }
+
+    img.neighbour {
+      height: 150px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <form>
+      <label for="upload">Choose a picture:</label>
+      <input type="file" id="upload" name="upload" accept="image/*">
+    </form>
+    <div class="row">
+        <img class="img-fluid card-img-top" id="main-image" src="">
+    </div>
+  <br/>
+  <div class="row">
+   <div class="col-md-12">
+      <span id="neighbour-1"><img class="neighbour" src=""/></span>
+      <span id="neighbour-2"><img class="neighbour" src=""></span>
+      <span id="neighbour-3"><img class="neighbour" src=""></span>
+      <span id="neighbour-4"><img class="neighbour" src=""></span>
+      <span id="neighbour-5"><img class="neighbour" src=""></span>
+      <span id="neighbour-6"><img class="neighbour" src=""></span>
+      <span id="neighbour-7"><img class="neighbour" src=""></span>
+      <span id="neighbour-8"><img class="neighbour" src=""></span>
+      <span id="neighbour-9"><img class="neighbour" src=""></span>
+   </div>
+  </div>
+</div>
+</body>
+
+<script typeof="text/javascript">
+    const images = [];
+    // var basepath = 'data/'; // Deployment
+    const basepath = 'http://localhost:5001/'; // Development
+
+    const mainImageElement = document.querySelector('#main-image');
+    const inputElement = document.getElementById("upload");
+
+    inputElement.addEventListener("change", handleFiles, false);
+
+    function handleFiles() {
+        const image = inputElement.files[0];
+        const fr = new FileReader();
+        fr.onload = function () {
+            mainImageElement.src = fr.result;
+        }
+        fr.readAsDataURL(image);
+
+        const xobj = new XMLHttpRequest();
+        xobj.open("POST", flaskPath() + '/upload');
+        xobj.setRequestHeader("Content-Type", "multipart/form-data");
+
+        xobj.onreadystatechange = function() { // Call a function when the state changes.
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                const neighbours = JSON.parse(xobj.responseText);
+
+                for (let i = 0; i < 9; i++) {
+                    setImage(
+                        neighbours[i],
+                        document.querySelector('#neighbour-' + String(i + 1))
+                    );
+                }
+            }
+        }
+        xobj.send(image);
+    }
+
+
+    function flaskPath() {
+        const params = new URLSearchParams(window.location.search)
+        return basepath + params.get("project");
+    }
+
+    function setImage(imageName, element) {
+        const imageElement = element.querySelector('img');
+
+        imageElement.src = flaskPath() + "/" + imageName;
+
+        element.onclick = function () {
+            updateHash(images.indexOf(imageName));
+        };
+    }
+
+</script>
+
+</html>
