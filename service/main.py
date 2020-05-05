@@ -11,6 +11,7 @@ import tensorflow.keras as keras
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.resnet50 import preprocess_input
 from PIL import Image
+import base64
 import io
 from PIL.Image import DecompressionBombError
 from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
@@ -80,7 +81,11 @@ def upload(project):
     app.logger.debug('Preprocessing uploaded image...')
     file = request.get_data()
 
-    img = Image.open(io.BytesIO(file))
+    try:
+        img = Image.open(io.BytesIO(file))
+    except Exception: # TODO: More explicit except
+        img = Image.open(io.BytesIO(base64.b64decode(file)))
+
     img = img.convert('RGB')
     img = img.resize((224, 224), Image.NEAREST)
     img = image.img_to_array(img)
