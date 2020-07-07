@@ -1,32 +1,31 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+    <div id="app">
+        <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+        <b-navbar>
+            <template slot="end">
+                <b-navbar-item><ProjectSelection/></b-navbar-item>
+                <b-navbar-item><NameSelection/></b-navbar-item>
+            </template>
+            <!-- <router-link to="/">Home</router-link> |
+            <router-link to="/about">About</router-link> -->
+        </b-navbar>
+        <!-- <router-view/> -->
+        <Main/>
     </div>
-    <router-view/>
-  </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import Vue from 'vue';
+import Main from '@/Main.vue';
+import NameSelection from '@/NameSelection.vue';
+import ProjectSelection from '@/ProjectSelection.vue';
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
+export default Vue.extend({
+  name: 'App',
+  components: {
+    NameSelection,
+    ProjectSelection,
+    Main,
+  },
+});
+</script>
