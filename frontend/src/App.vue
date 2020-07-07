@@ -10,7 +10,9 @@
             <router-link to="/about">About</router-link> -->
         </b-navbar>
         <!-- <router-view/> -->
-        <Main/>
+        <section v-if="allSet">
+          <Main/>
+        </section>
     </div>
 </template>
 
@@ -26,6 +28,11 @@ export default Vue.extend({
     NameSelection,
     ProjectSelection,
     Main,
+  },
+  computed: {
+    allSet() {
+      return this.$store.state.user !== '' && this.$store.state.project !== '';
+    },
   },
 });
 </script>
