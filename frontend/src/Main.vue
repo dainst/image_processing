@@ -1,11 +1,11 @@
 <template>
     <section>
         <div class="columns">
-            <div class="column is-half">
-                Main image
+            <div class="column">
+                <span v-if="selectedImageData">Main image:</span>
                 <img :src="selectedImageData"/>
             </div>
-            <div class="column is-half" v-if="neighoursData.length > 0">
+            <div class="column" v-if="neighoursData.length > 0">
                 <ComparedImage
                     :image-name="neighoursData[0][0]"
                     :distance="neighoursData[0][1]"
@@ -90,9 +90,3 @@ export default Vue.extend({
   },
 });
 </script>
-
-<style>
-    .primaryImage {
-        max-height: 500px;
-    }
-</style>
