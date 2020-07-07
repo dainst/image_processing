@@ -1,5 +1,11 @@
 <template>
     <section>
+        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+            <ul class="pagination-list">
+                <a class="pagination-link" @click="previousImage">Previous</a>
+                <a class="pagination-link" @click="nextImage">Next</a>
+            </ul>
+        </nav>
         <div class="columns">
             <div class="column">
                 <span v-if="selectedImageData">Main image:</span>
@@ -65,28 +71,44 @@ export default Vue.extend({
     },
   },
   watch: {
-    project(name) {
-      this.loadImages(name);
+    project() {
+      this.loadImages();
     },
   },
   methods: {
-    async loadImages(project) {
+    async loadImages() {
       this.images = [];
       this.neighoursData = [];
-      if (project === '') {
+      if (this.$store.state.project === '') {
         return;
       }
 
       this.images = await axios
-        .get(`${backendUri}/${project}`)
+        .get(`${backendUri}/${this.$store.state.project}`)
         .then((response) => response.data);
 
+      this.updateDisplayedImages();
+    },
+    async updateDisplayedImages() {
       const selectedImageName = this.images[this.selectedImageIndex];
       this.neighoursData = await axios
-        .get(`${backendUri}/${project}/neighbours/${selectedImageName}`)
+        .get(`${backendUri}/${this.$store.state.project}/neighbours/${selectedImageName}`)
         .then((response) => response.data);
-      this.selectedImageData = `${backendUri}/${project}/${selectedImageName}`;
+      this.selectedImageData = `${backendUri}/${this.$store.state.project}/${selectedImageName}`;
     },
+    previousImage() {
+      this.selectedImageIndex -= 1;
+      if (this.selectedImageIndex < 0) this.selectedImageIndex = 0;
+      this.updateDisplayedImages();
+    },
+    nextImage() {
+      this.selectedImageIndex += 1;
+      if (this.selectedImageIndex >= this.images.length) {
+        this.selectedImageIndex = this.images.length - 1;
+      }
+      this.updateDisplayedImages();
+    },
+
   },
 });
 </script>
