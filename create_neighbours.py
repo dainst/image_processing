@@ -4,8 +4,11 @@ import argparse
 import logging
 import numpy as np
 import time
+import os
 
 from sklearn.neighbors import NearestNeighbors
+
+from global_directories import GloabalDir
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,8 +21,8 @@ parser.add_argument('-k', '--k_nearest', type=int, default=20,
                     help="keep k nearest neighbours for each image image, default: 20")
 
 
-def create_neighbours(project_name, k):
-    f = h5py.File(f"./projects/{project_name}.hdf5", 'r+')
+def create_neighbours(project_name: str, k: int) -> None:
+    f = h5py.File(f"{os.path.join(GloabalDir.projects,project_name)}.hdf5", 'r+')
 
     features_matrix = []
     image_name_to_id_mapping = {}

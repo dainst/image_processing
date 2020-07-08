@@ -1,0 +1,2 @@
+class GloabalDir:
+    projects = './projects'

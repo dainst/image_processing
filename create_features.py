@@ -6,10 +6,14 @@ import json
 
 import keras
 import numpy as np
+import os
 
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input
 from PIL.Image import DecompressionBombError
+from typing import Tuple, Callable
+
+from global_directories import GloabalDir
 
 
 logger = logging.getLogger(__name__)
@@ -21,18 +25,17 @@ parser = argparse.ArgumentParser(description="Scan for images in the source dire
 parser.add_argument('project', type=str, help="Specifiy project name.")
 
 
-def create_features(project_name):
+def create_features(project_name: str) -> None:
     logger.info("Loading models...")
     res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
 
-    f = h5py.File(f'./projects/{project_name}.hdf5', 'r+')
+    f = h5py.File(f'{os.path.join(GloabalDir.projects,project_name)}.hdf5', 'r+')
 
-    with open(f"./projects/{project_name}.info", "r") as info:
+    with open(f"{os.path.join(GloabalDir.projects,project_name)}.info", "r") as info:
         absolute_path = json.loads(info.read())['initial_absolute_path']
 
-    counter = 1
     key_count = len(f.keys())
-    for key in f:
+    for counter, key in enumerate(f, start=1):
         g = f[key]
         image_path = f"{absolute_path}/{g.attrs['path']}"
         try:
