@@ -42,13 +42,7 @@ def create_features(project_name: str) -> None:
             if counter % 100 == 0:
                 logger.info(f'Progress: {counter}/{key_count}')
 
-            img = image.load_img(image_path, target_size=(224, 224))
-            img_data = image.img_to_array(img)
-            img_data = np.expand_dims(img_data, axis=0)
-            img_data = preprocess_input(img_data)
-
-            res_net_feature = res_net.predict(img_data)
-            res_net_feature_flattened = np.array(res_net_feature).flatten()
+            res_net_feature_flattened = create_image_feature_vector(image_path, res_net, preprocess_input)
             features = g.create_dataset("features", data=res_net_feature_flattened)
             features.attrs['model'] = "keras.applications.resnet50.ResNet50"
 
@@ -67,6 +61,15 @@ def create_features(project_name: str) -> None:
     logger.info(f'Done')
     f.close()
 
+def create_image_feature_vector(image_path: str, model: keras.Model, preporcess_function: Callable, target_size: Tuple[int, int] = (244,244)) -> np.ndarray:
+    """ Reads image and returns flattened feature vector of given image """
+    img = image.load_img(image_path, target_size=target_size)
+    img_data = image.img_to_array(img)
+    img_data = np.expand_dims(img_data, axis=0)
+    img_data = preporcess_function(img_data)
+
+    model_feature = model.predict(img_data)
+    return np.array(model_feature).flatten()
 
 if __name__ == "__main__":
     create_features(vars(parser.parse_args()))
