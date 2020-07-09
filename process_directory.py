@@ -27,8 +27,8 @@ def is_readable_directory(path: str):
 parser = argparse.ArgumentParser(description="Scan for images in the source directory.")
 parser.add_argument('project', type=str, help="Specifiy project name.")
 parser.add_argument('source', type=is_readable_directory, help="specify input directory.")
-parser.add_argument('-k', '--k_nearest', type=int, default=20,
-                    help="keep k nearest neighbours for each image image, default: 20")
+parser.add_argument('-k', '--k_nearest', type=str, default='all',
+                    help="keep k nearest neighbours for each image image, default: all. If given value is all: All images from dataset are compared")
 
 valid_image_files = [
     ".jpg", '.jpeg', '.png'
