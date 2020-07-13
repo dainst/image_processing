@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, abort, Response
 from flask_cors import CORS
 
 import h5py
@@ -10,6 +10,7 @@ import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.resnet50 import preprocess_input
+from typing import List, Tuple
 from PIL import Image
 import base64
 import io
@@ -138,7 +139,37 @@ def get_image_neighbours(project, image_name):
 
     return jsonify(result)
 
+@app.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
+def vote_image_for_username(project, image_name):
 
+    try:
+        userame, vote, neighbour_image = read_uservote_request_body(request)
+    except ValueError as ve:
+        abort(Response(str(ve), 400))
+    except TypeError as te:
+        abort(Response(str(te), 400))
+
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r+') as f:
+        neighbours_eval = f[image_name].require_group(neighbours_eval_group)
+        user = neighbours_eval.require_group(userame)
+        neighbour_img = user.require_group(neighbour_image)
+        neighbour_img.attrs.modify('vote', int(vote))
+
+    return jsonify(message="Added vote", body=request.json)
+
+
+def read_uservote_request_body(req_body) -> Tuple[str, str, str]:
+    """ Read user vote request body and return data if body has valid format """
+    if not req_body.is_json:
+        raise TypeError('No json file provided')
+    content = req_body.get_json()
+    if 'vote' not in content or 'neighbour_image' not in content or 'user' not in content:
+        raise ValueError('Not all data provided in request body')
+    if int(content['vote']) != 1 and int(content['vote']) != 0:
+        raise ValueError('Provide vote with value of either 0 or 1')
+    
+    return content['user'], content['vote'], content['neighbour_image']
+    
 def load_model():
     global res_net
     res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
