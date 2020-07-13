@@ -25,6 +25,8 @@ res_net = None
 
 projects_dir = "/projects"
 images_dir = "/images"
+neighbours_eval_group = 'neighbours_eval'
+neighbours_group = 'neighbours'
 
 project_cache = {}
 
@@ -124,20 +126,52 @@ def get_image_features(project, image_name):
     return jsonify(f[image_name]['features'][()].tolist())
 
 
-@app.route("/<project>/neighbours/<image_name>")
-def get_image_neighbours(project, image_name):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
+@app.route("/<project>/neighbours/<image_name>/<user>")
+def get_image_neighbours(project, image_name, user):
 
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        if image_name not in f:
+            abort(Response(f'Could not find image {image_name}', 400))
+        positive_votes, negative_votes = image_list_votes(f, image_name, user)
+        distances = image_list_distances(f, image_name)
+    
+    respond = jsonify(user=user, 
+                    pos_votes = positive_votes,
+                    neg_votes = negative_votes,
+                    distances = distances)
+    app.logger.debug(f'Get request for user {user} and project {project}')
+    return respond
+
+
+def image_list_votes(h5_file: h5py.File, image_name: str, user: str) -> Tuple[List[str], List[str]]:
+    """ List positive and negative user votes in two separate lists. 
+        Return empty lists if there are not votes for user in h5 file """
+    positive_votes, negative_votes = [], []
+
+    if user not in h5_file[image_name][neighbours_eval_group]: 
+        return [], []
+
+    neighbours = h5_file[image_name][neighbours_eval_group][user]   
+    for image in neighbours.keys():
+        if neighbours[image].attrs['vote']:
+            positive_votes.append(image)
+        else:
+            negative_votes.append(image_name)
+    return positive_votes, negative_votes
+
+
+def image_list_distances(h5_file: h5py.File, image_name: str) -> List[Tuple[str,float]]:
+    """ List image neighbours with corresponding distances """
     result = []
-    for neighbour_name in f[image_name]['neighbours']:
+    for neighbour_name in h5_file[image_name][neighbours_group]:
         result += [(
-            neighbour_name, float(f[image_name]['neighbours'][neighbour_name].attrs['distance'][()])
+            neighbour_name, float(
+                h5_file[image_name][neighbours_group][neighbour_name].attrs['distance'][()])
         )]
 
     result = sorted(result, key=lambda tup: tup[1])
-    app.logger.debug(result)
+    return result
 
-    return jsonify(result)
 
 @app.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
 def vote_image_for_username(project, image_name):
