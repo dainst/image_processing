@@ -128,51 +128,21 @@ def get_image_features(project, image_name):
 @app.route("/<project>/neighbours/<image_name>/<user>")
 def get_image_neighbours(project, image_name, user):
 
+    image_list = []
     with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
         if image_name not in f:
             abort(Response(f'Could not find image {image_name}', 400))
-        positive_votes, negative_votes = image_list_votes(f, image_name, user)
-        distances = image_list_distances(f, image_name)
-    
-    respond = jsonify(user=user, 
-                    pos_votes = positive_votes,
-                    neg_votes = negative_votes,
-                    distances = distances)
+        
+        for image in f[image_name][neighbours_group]:
+            temp_dict = {'filename': image, 
+                'distance': str(f[image_name][neighbours_group][image].attrs.get('distance'))}
+            user_vote = f[image_name][neighbours_group][image].attrs.get(user)
+            temp_dict['vote'] = str(user_vote) if user_vote else str(0)
+            image_list.append(temp_dict)
+            
+    respond = jsonify(image_list)
     app.logger.debug(f'Get request for user {user} and project {project}')
     return respond
-
-
-def image_list_votes(h5_file: h5py.File, image_name: str, user: str) -> Tuple[List[str], List[str]]:
-    """ List positive and negative user votes in two separate lists. 
-        Return empty lists if there are not votes for user in h5 file """
-    positive_votes, negative_votes = [], []
-
-    if neighbours_eval_group not in h5_file[image_name]:
-        return [], []
-
-    if user not in h5_file[image_name][neighbours_eval_group]: 
-        return [], []
-
-    neighbours = h5_file[image_name][neighbours_eval_group][user]   
-    for image in neighbours.keys():
-        if neighbours[image].attrs['vote']:
-            positive_votes.append(image)
-        else:
-            negative_votes.append(image_name)
-    return positive_votes, negative_votes
-
-
-def image_list_distances(h5_file: h5py.File, image_name: str) -> List[Tuple[str,float]]:
-    """ List image neighbours with corresponding distances """
-    result = []
-    for neighbour_name in h5_file[image_name][neighbours_group]:
-        result += [(
-            neighbour_name, float(
-                h5_file[image_name][neighbours_group][neighbour_name].attrs['distance'][()])
-        )]
-
-    result = sorted(result, key=lambda tup: tup[1])
-    return result
 
 
 @app.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
