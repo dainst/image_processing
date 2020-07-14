@@ -11,31 +11,31 @@
                 <span v-if="selectedImageData">Main image:</span>
                 <img :src="selectedImageData"/>
             </div>
-            <div class="column" v-if="neighoursData.length > 0">
+            <div class="column" v-if="neighoursData">
                 <ComparedImage
-                    :image-name="neighoursData[0][0]"
-                    :distance="neighoursData[0][1]"
+                    :image-name="neighoursData['distances'][0][0]"
+                    :distance="neighoursData['distances'][0][1]"
                 />
             </div>
         </div>
         <div class="columns">
             <div class="tile is-parent is-12">
-                <div class="tile is-child" v-if="neighoursData.length > 0">
+                <div class="tile is-child" v-if="neighoursData">
                     <ComparedImage
-                        :image-name="neighoursData[1][0]"
-                        :distance="neighoursData[1][1]"
+                        :image-name="neighoursData['distances'][1][0]"
+                        :distance="neighoursData['distances'][1][1]"
                     />
                 </div>
-                <div class="tile is-child" v-if="neighoursData.length > 0">
+                <div class="tile is-child" v-if="neighoursData">
                     <ComparedImage
-                        :image-name="neighoursData[2][0]"
-                        :distance="neighoursData[2][1]"
+                        :image-name="neighoursData['distances'][2][0]"
+                        :distance="neighoursData['distances'][2][1]"
                     />
                 </div>
-                <div class="tile is-child" v-if="neighoursData.length > 0">
+                <div class="tile is-child" v-if="neighoursData">
                     <ComparedImage
-                        :image-name="neighoursData[2][0]"
-                        :distance="neighoursData[2][1]"
+                        :image-name="neighoursData['distances'][2][0]"
+                        :distance="neighoursData['distances'][2][1]"
                     />
                 </div>
             </div>
@@ -78,7 +78,7 @@ export default Vue.extend({
   methods: {
     async loadImages() {
       this.images = [];
-      this.neighoursData = [];
+      this.neighoursData = null;
       if (this.$store.state.project === '') {
         return;
       }
@@ -92,7 +92,7 @@ export default Vue.extend({
     async updateDisplayedImages() {
       const selectedImageName = this.images[this.selectedImageIndex];
       this.neighoursData = await axios
-        .get(`${backendUri}/${this.$store.state.project}/neighbours/${selectedImageName}`)
+        .get(`${backendUri}/${this.$store.state.project}/neighbours/${selectedImageName}/${this.$store.state.user}`)
         .then((response) => response.data);
       this.selectedImageData = `${backendUri}/${this.$store.state.project}/${selectedImageName}`;
     },
