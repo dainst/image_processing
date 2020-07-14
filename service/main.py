@@ -25,7 +25,6 @@ res_net = None
 
 projects_dir = "/projects"
 images_dir = "/images"
-neighbours_eval_group = 'neighbours_eval'
 neighbours_group = 'neighbours'
 
 project_cache = {}
@@ -180,17 +179,16 @@ def image_list_distances(h5_file: h5py.File, image_name: str) -> List[Tuple[str,
 def vote_image_for_username(project, image_name):
 
     try:
-        userame, vote, neighbour_image = read_uservote_request_body(request)
+        username, vote, neighbour_image = read_uservote_request_body(request)
     except ValueError as ve:
         abort(Response(str(ve), 400))
     except TypeError as te:
         abort(Response(str(te), 400))
 
     with h5py.File(f'{projects_dir}/{project}.hdf5', 'r+') as f:
-        neighbours_eval = f[image_name].require_group(neighbours_eval_group)
-        user = neighbours_eval.require_group(userame)
-        neighbour_img = user.require_group(neighbour_image)
-        neighbour_img.attrs.modify('vote', int(vote))
+        neighbours = f[image_name].require_group(neighbours_group)
+        neighbour_img = neighbours.require_group(neighbour_image)
+        neighbour_img.attrs.modify(username, int(vote))
 
     return jsonify(message="Added vote", body=request.json)
 
@@ -202,8 +200,8 @@ def read_uservote_request_body(req_body) -> Tuple[str, str, str]:
     content = req_body.get_json()
     if 'vote' not in content or 'neighbour_image' not in content or 'user' not in content:
         raise ValueError('Not all data provided in request body')
-    if int(content['vote']) != 1 and int(content['vote']) != 0:
-        raise ValueError('Provide vote with value of either 0 or 1')
+    if int(content['vote']) != -1 and int(content['vote']) != 1:
+        raise ValueError('Provide vote with value of either -1 or 1')
     
     return content['user'], content['vote'], content['neighbour_image']
     
