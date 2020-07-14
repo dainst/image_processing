@@ -148,6 +148,9 @@ def image_list_votes(h5_file: h5py.File, image_name: str, user: str) -> Tuple[Li
         Return empty lists if there are not votes for user in h5 file """
     positive_votes, negative_votes = [], []
 
+    if neighbours_eval_group not in h5_file[image_name]:
+        return [], []
+
     if user not in h5_file[image_name][neighbours_eval_group]: 
         return [], []
 
