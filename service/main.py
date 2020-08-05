@@ -16,6 +16,7 @@ import base64
 import io
 from PIL.Image import DecompressionBombError
 from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
+import operator
 
 app = Flask('image_processing_service')
 cors = CORS(app)
@@ -144,6 +145,7 @@ def get_image_neighbours(project, image_name, user):
             temp_dict['vote'] = str(user_vote) if user_vote else str(0)
             image_list.append(temp_dict)
             
+    image_list.sort(key=operator.itemgetter('distance'))
     respond = jsonify(image_list)
     app.logger.debug(f'Get request for user {user} and project {project}')
     return respond
