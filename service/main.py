@@ -116,7 +116,11 @@ def upload(project):
 @app.route("/<project>/<image_name>")
 def get_image_data(project, image_name):
     f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return send_file(f"{images_dir}/{project}/{f[image_name].attrs['path']}")
+    file_path = f"{images_dir}/{project}/{f[image_name].attrs['path']}"
+    
+    if not os.path.isfile(file_path):
+        abort(Response(f'Could not find image {image_name}', 404))
+    return send_file(file_path)
 
 
 @app.route("/<project>/features/<image_name>")
