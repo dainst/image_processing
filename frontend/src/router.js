@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 // import Home from './views/Home.vue';
-import NameSelection from './NameSelection.vue';
+import NameSelection from "./components/NameSelection.vue";
 
 Vue.use(VueRouter);
 

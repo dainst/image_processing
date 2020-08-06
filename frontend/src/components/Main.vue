@@ -7,38 +7,46 @@
             </ul>
         </nav>
         <div class="columns">
-            <div class="column">
+          <!-- positive -->
+          <div class="column is-one-quarter">
+            <VoteList
+              type="Positive"
+              :data="neighoursData"
+              direction="column"
+              v-on:updateVote="updateVoteForImage($event)"
+            />
+          </div>
+          <!-- main middle -->
+          <div class="column">
+            <div class="columns">
+              <div class="column is-half">
                 <span v-if="selectedImageData">Main image:</span>
-                <img :src="selectedImageData"/>
-            </div>
-            <div class="column" v-if="neighoursData">
+                 <img :src="selectedImageData"/>
+              </div>
+              <div class="column is-half">
                 <ComparedImage
-                    :image-name="neighoursData['distances'][0][0]"
-                    :distance="neighoursData['distances'][0][1]"
+                  :image-name="closestNonVotedImage['filename']"
+                  :distance="closestNonVotedImage['distance']"
                 />
+              </div>
             </div>
-        </div>
-        <div class="columns">
-            <div class="tile is-parent is-12">
-                <div class="tile is-child" v-if="neighoursData">
-                    <ComparedImage
-                        :image-name="neighoursData['distances'][1][0]"
-                        :distance="neighoursData['distances'][1][1]"
-                    />
-                </div>
-                <div class="tile is-child" v-if="neighoursData">
-                    <ComparedImage
-                        :image-name="neighoursData['distances'][2][0]"
-                        :distance="neighoursData['distances'][2][1]"
-                    />
-                </div>
-                <div class="tile is-child" v-if="neighoursData">
-                    <ComparedImage
-                        :image-name="neighoursData['distances'][2][0]"
-                        :distance="neighoursData['distances'][2][1]"
-                    />
-                </div>
-            </div>
+            <!-- not voted -->
+              <VoteList
+                type="Without"
+                :data="neighoursData"
+                direction='row'
+                v-on:updateVote="updateVoteForImage($event)"
+              />
+          </div>
+          <!-- negativ -->
+          <div class="column is-one-quarter">
+            <VoteList
+              type="Negative"
+              :data="neighoursData"
+              direction='column'
+              v-on:updateVote="updateVoteForImage($event)"
+            />
+          </div>
         </div>
     </section>
 </template>
@@ -48,11 +56,13 @@ import Vue from 'vue';
 import axios from 'axios';
 import backendUri from './config';
 import ComparedImage from './ComparedImage.vue';
+import VoteList from './VoteList.vue';
 
 export default Vue.extend({
   name: 'Main.vue',
   components: {
     ComparedImage,
+    VoteList,
   },
   data() {
     return {
@@ -60,6 +70,7 @@ export default Vue.extend({
       neighoursData: [],
       selectedImageIndex: 0,
       selectedImageData: null,
+      closestNonVotedImage: null,
     };
   },
   mounted() {
@@ -95,6 +106,7 @@ export default Vue.extend({
         .get(`${backendUri}/${this.$store.state.project}/neighbours/${selectedImageName}/${this.$store.state.user}`)
         .then((response) => response.data);
       this.selectedImageData = `${backendUri}/${this.$store.state.project}/${selectedImageName}`;
+      this.findClosestNonVotedImage();
     },
     previousImage() {
       this.selectedImageIndex -= 1;
@@ -108,7 +120,24 @@ export default Vue.extend({
       }
       this.updateDisplayedImages();
     },
-
+    findClosestNonVotedImage() {
+      for (let i = 0; i < this.neighoursData.length; i += 1) {
+        const { vote } = this.neighoursData[i];
+        if (vote === '0') {
+          this.closestNonVotedImage = this.neighoursData[i];
+          break;
+        }
+      }
+    },
+    updateVoteForImage(event) {
+      for (let i = 0; i < this.neighoursData.length; i += 1) {
+        const { filename } = this.neighoursData[i];
+        if (filename === event.filename) {
+          this.neighoursData[i].vote = event.newVote;
+          break;
+        }
+      }
+    },
   },
 });
 </script>

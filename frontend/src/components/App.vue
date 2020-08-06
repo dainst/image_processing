@@ -18,9 +18,9 @@
 
 <script>
 import Vue from 'vue';
-import Main from '@/Main.vue';
-import NameSelection from '@/NameSelection.vue';
-import ProjectSelection from '@/ProjectSelection.vue';
+import Main from './Main.vue';
+import NameSelection from './NameSelection.vue';
+import ProjectSelection from './ProjectSelection.vue';
 
 export default Vue.extend({
   name: 'App',
