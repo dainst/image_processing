@@ -6,9 +6,13 @@ __pycache__/
 **/.vscode/**
 .devcontainer/**
 vscode_remote/**
+.eslintrc.json
 
 # Docker configuration
 .env
+
+# node modules
+node_modules/**
 
 # MariaDB directory created by Docker
 db_data/*
