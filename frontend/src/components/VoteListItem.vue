@@ -1,21 +1,26 @@
 <style>
-
 .arrows {
-    display: inline-block;
+  display: inline-block;
 }
 
 .arrow_element {
-    border-width: 5px;
-    border-style: solid;
-    display: inline-block;
+  border-width: 1px;
+  border-style: solid;
+  display: inline-block;
+  padding: 3px;
+}
+
+.arrow_element:hover {
+  color: white;
+  cursor: default;
 }
 
 .neg:hover {
-    background-color: darkred;
+  background-color: darkred;
 }
 
 .pos:hover {
-    background-color: darkgreen;
+  background-color: darkgreen;
 }
 
 .arrow {
@@ -34,27 +39,23 @@
   transform: rotate(135deg);
   -webkit-transform: rotate(135deg);
 }
-
 </style>
 
 <template>
-    <div>
-        <img :src="imageUrl(this.name)" />
-        <div class="arrows">
-            <p
-                v-if="vote !== '1'" class="arrow_element pos"
-                v-on:click="changeVote('1')">
-                <i class="arrow left"></i>
-                pos
-            </p>
-            <p
-                v-if="vote !== '-1'" class="arrow_element neg"
-                v-on:click="changeVote('-1')">
-                <i class="arrow right"></i>
-                neg
-            </p>
-        </div>
+  <div style="margin: 5px">
+    <img :src="imageUrl(this.name)" />
+    {{name}}
+    <div class="arrows">
+      <p v-if="vote !== '1'" class="arrow_element pos" v-on:click="changeVote('1')">
+        <i class="arrow left"></i>
+        pos
+      </p>
+      <p v-if="vote !== '-1'" class="arrow_element neg" v-on:click="changeVote('-1')">
+        <i class="arrow right"></i>
+        neg
+      </p>
     </div>
+  </div>
 </template>
 
 <script>

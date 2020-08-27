@@ -1,19 +1,26 @@
 <template>
-    <div id="app">
-        <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
-        <b-navbar>
-            <template slot="end">
-                <b-navbar-item><ProjectSelection/></b-navbar-item>
-                <b-navbar-item><NameSelection/></b-navbar-item>
-            </template>
-            <!-- <router-link to="/">Home</router-link> |
-            <router-link to="/about">About</router-link> -->
-        </b-navbar>
-        <!-- <router-view/> -->
-        <section v-if="allSet">
-          <Main/>
-        </section>
-    </div>
+  <div id="app">
+    <link
+      rel="stylesheet"
+      href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css"
+    />
+    <b-navbar>
+      <template slot="end">
+        <b-navbar-item>
+          <ProjectSelection />
+        </b-navbar-item>
+        <b-navbar-item>
+          <NameSelection />
+        </b-navbar-item>
+      </template>
+      <!-- <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>-->
+    </b-navbar>
+    <!-- <router-view/> -->
+    <section v-if="allSet">
+      <Main />
+    </section>
+  </div>
 </template>
 
 <script>

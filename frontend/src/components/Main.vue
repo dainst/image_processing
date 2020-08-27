@@ -1,67 +1,83 @@
+<style scoped>
+.outer_div {
+  border-radius: 10px;
+  border: 2px solid #7957d5;
+  margin-top: 15px;
+}
+</style>
 <template>
-    <section>
-        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-            <ul class="pagination-list">
-                <a class="pagination-link" @click="previousImage">Previous</a>
-                <a class="pagination-link" @click="nextImage">Next</a>
-            </ul>
-        </nav>
-        <div class="columns">
-          <!-- positive -->
-          <div class="column is-one-quarter">
-            <VoteList
-              type="Positive"
-              :data="neighoursData"
-              direction="column"
-              v-on:updateVote="updateVoteForImage($event)"
-            />
+  <section>
+    <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+      <ul class="pagination-list">
+        <a class="pagination-link" @click="previousImage">Previous</a>
+        <a class="pagination-link" @click="nextImage">Next</a>
+      </ul>
+    </nav>
+    <div class="columns">
+      <!-- positive -->
+      <div class="column is-one-quarter">
+        <VoteList
+          type="Positive"
+          :data="neighoursData"
+          direction="column"
+          v-on:updateVote="updateVoteForImage($event)"
+        />
+      </div>
+      <!-- main middle -->
+      <div class="column is-half">
+        <div class="columns outer_div">
+          <div class="column is-half">
+            <span v-if="selectedImageData">
+              <img :src="selectedImageData" />
+              <strong>Main image:</strong>
+              {{images[this.selectedImageIndex]}}
+            </span>
           </div>
-          <!-- main middle -->
-          <div class="column">
-            <div class="columns">
-              <div class="column is-half">
-                <span v-if="selectedImageData">Main image:</span>
-                 <img :src="selectedImageData"/>
-              </div>
-              <div class="column is-half">
-                <ComparedImage
-                  :image-name="closestNonVotedImage['filename']"
-                  :distance="closestNonVotedImage['distance']"
-                />
-              </div>
-            </div>
-            <!-- not voted -->
-              <VoteList
-                type="Without"
-                :data="neighoursData"
-                direction='row'
-                v-on:updateVote="updateVoteForImage($event)"
-              />
-          </div>
-          <!-- negativ -->
-          <div class="column is-one-quarter">
-            <VoteList
-              type="Negative"
-              :data="neighoursData"
-              direction='column'
-              v-on:updateVote="updateVoteForImage($event)"
+          <div class="column is-half">
+            <VoteListItem
+              :name="closestNonVotedImage['filename']"
+              :vote="closestNonVotedImage['vote']"
+              v-on:changeVote="updateVoteForClosestImage($event)"
             />
+            <!--   <ComparedImage
+              :image-name="closestNonVotedImage['filename']"
+              :distance="closestNonVotedImage['distance']"
+            />-->
           </div>
         </div>
-    </section>
+        <!-- not voted -->
+        <VoteList
+          type="Without"
+          :data="neighoursData"
+          direction="row"
+          v-on:updateVote="updateVoteForImage($event)"
+        />
+      </div>
+      <!-- negative -->
+      <div class="column is-one-quarter">
+        <VoteList
+          type="Negative"
+          :data="neighoursData"
+          direction="column"
+          v-on:updateVote="updateVoteForImage($event)"
+        />
+      </div>
+    </div>
+  </section>
 </template>
 
 <script>
 import Vue from 'vue';
 import axios from 'axios';
 import backendUri from './config';
-import ComparedImage from './ComparedImage.vue';
+// import ComparedImage from './ComparedImage.vue';
+import VoteListItem from './VoteListItem.vue';
 import VoteList from './VoteList.vue';
 
 export default Vue.extend({
   name: 'Main.vue',
   components: {
-    ComparedImage,
+    VoteListItem,
     VoteList,
   },
   data() {
@@ -129,11 +145,32 @@ export default Vue.extend({
         }
       }
     },
+    updateVoteForClosestImage(event) {
+      this.updateVoteForImage(event);
+      this.findClosestNonVotedImage();
+    },
     updateVoteForImage(event) {
       for (let i = 0; i < this.neighoursData.length; i += 1) {
         const { filename } = this.neighoursData[i];
         if (filename === event.filename) {
           this.neighoursData[i].vote = event.newVote;
+          // send post request to server
+          axios({
+            method: 'post',
+            url: `${backendUri}/${this.$store.state.project}/neighbours/${this.images[this.selectedImageIndex]}/vote`,
+            data: {
+              user: this.$store.state.user,
+              vote: event.newVote,
+              neighbour_image: filename,
+            },
+          })
+            .then((response) => {
+              console.log(response.data);
+            })
+            .catch((response) => {
+              // handle error
+              console.log(response);
+            });
           break;
         }
       }
