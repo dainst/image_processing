@@ -33,7 +33,7 @@
               {{images[this.selectedImageIndex]}}
             </span>
           </div>
-          <div class="column is-half">
+          <div class="column is-half" v-if="closestNonVotedImage">
             <VoteListItem
               :name="closestNonVotedImage['filename']"
               :vote="closestNonVotedImage['vote']"
