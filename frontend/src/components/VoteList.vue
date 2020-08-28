@@ -24,6 +24,16 @@ h1 {
   font-weight: bold;
   color: #7957d5;
 }
+
+.test {
+  height: 30%;
+  overflow: auto;
+  display: flex;
+}
+.column_container {
+  max-height: 1000px;
+  overflow: auto;
+}
 </style>
 
 <template>
@@ -39,7 +49,7 @@ h1 {
         />
       </div>
     </div>
-    <div v-else-if="direction === 'column'">
+    <div v-else-if="direction === 'column'" class="column_container">
       <div v-for="item of this.data" :key="item">
         <VoteListItem
           v-if="checkRender(item.vote)"

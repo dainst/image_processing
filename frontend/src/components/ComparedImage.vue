@@ -1,8 +1,9 @@
 <template>
-    <section>
-        Distance: {{distance}}
-        <img v-bind:src="imageUrl"/>
-    </section>
+  <section>
+    <img v-bind:src="imageUrl" />
+    Name: {{imageName}}
+    Distance: {{distance}}
+  </section>
 </template>
 
 <script>
