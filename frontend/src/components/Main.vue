@@ -96,10 +96,16 @@ export default Vue.extend({
     project() {
       return this.$store.state.project;
     },
+    name() {
+      return this.$store.state.user;
+    },
   },
   watch: {
     project() {
-      this.loadImages();
+      this.loadImages(this.$store.state.project);
+    },
+    name() {
+      this.loadImages(this.$store.state.project);
     },
   },
   methods: {
