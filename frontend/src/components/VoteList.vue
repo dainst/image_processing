@@ -85,8 +85,10 @@ export default Vue.extend({
         if (vote === '-1') retValue = true;
         else retValue = false;
       } else if (this.type === 'Without') {
-        if (vote === '0' && this.$parent.closestNonVotedImage.filename !== filename) retValue = true;
-        else retValue = false;
+        if (
+          vote === '0'
+          && this.$parent.closestNonVotedImage.filename !== filename
+        ) { retValue = true; } else retValue = false;
       }
       return retValue;
     },
