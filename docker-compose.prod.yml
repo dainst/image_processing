@@ -1,0 +1,41 @@
+version: '3.5'
+
+services:
+  api:
+    image: dainst/image-processing-api
+    networks:
+      - web
+    ports:
+      - '5001:5000'
+    working_dir: /service
+    volumes: 
+      - projects:/projects
+      - images:/images 
+    deploy:
+      labels:
+        - 'traefik.docker.network=web'
+        - 'traefik.enable=true'
+        - 'traefik.frontend.rule=Host:image-processing.idai.world; PathPrefix:/api'
+        - 'traefik.port=5000'
+  ui:
+    image: dainst/image-processing-ui
+    networks:
+      - web
+    working_dir: /app
+    deploy:
+      labels:
+        - 'traefik.docker.network=web'
+        - 'traefik.enable=true'
+        - 'traefik.frontend.rule=Host:image-processing.idai.world'
+        - 'traefik.port=80'
+networks:
+  web:
+    external: true
+
+volumes:
+  projects:
+    name: image-processing_projects
+    external: true
+  images:
+    name: image-processing_images
+    external: true

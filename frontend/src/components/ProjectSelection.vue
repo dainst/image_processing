@@ -28,7 +28,7 @@ export default Vue.extend({
   },
   mounted() {
     axios
-      .get(backendUri)
+      .get(`${backendUri}/`)
       .then((response) => this.setProjects(response.data));
   },
   computed: {
