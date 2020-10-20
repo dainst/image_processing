@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, jsonify, send_file, request, abort, Response
+from flask.blueprints import Blueprint
 from flask_cors import CORS
 
 import h5py
@@ -19,6 +20,7 @@ from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
 import operator
 
 app = Flask('image_processing_service')
+bp = Blueprint('bp', __name__)
 cors = CORS(app)
 
 app.debug = True
@@ -31,7 +33,7 @@ neighbours_group = 'neighbours'
 project_cache = {}
 
 
-@app.route('/')
+@bp.route('/')
 def index():
 
     available_projects = []
@@ -43,13 +45,16 @@ def index():
     return jsonify(available_projects)
 
 
-@app.route("/<project>")
+@bp.route("/<project>")
 def get_image_names(project):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return jsonify(list(f.keys()))
+    keys = None
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        keys = list(f.keys())
+
+    return jsonify(keys)
 
 
-@app.route('/<project>/upload', methods=['POST'])
+@bp.route('/<project>/upload', methods=['POST'])
 def upload(project):
     global res_net
     global project_cache
@@ -86,7 +91,7 @@ def upload(project):
 
     try:
         img = Image.open(io.BytesIO(file))
-    except Exception: # TODO: More explicit except
+    except Exception:  # todo: More explicit except
         img = Image.open(io.BytesIO(base64.b64decode(file)))
 
     img = img.convert('RGB')
@@ -101,7 +106,8 @@ def upload(project):
     app.logger.debug('Predicting nearest neighbours.')
     res_net_feature = res_net.predict(img_data)
     res_net_feature_flattened = np.array(res_net_feature).flatten()
-    res_net_feature_flattened = np.expand_dims(res_net_feature_flattened, axis=0)
+    res_net_feature_flattened = np.expand_dims(
+        res_net_feature_flattened, axis=0)
 
     nn = NearestNeighbors(n_neighbors=10)
     nn.fit(features_matrix)
@@ -114,44 +120,47 @@ def upload(project):
     return jsonify(result)
 
 
-@app.route("/<project>/<image_name>")
+@bp.route("/<project>/<image_name>")
 def get_image_data(project, image_name):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    file_path = f"{images_dir}/{project}/{f[image_name].attrs['path']}"
-    
-    if not os.path.isfile(file_path):
-        abort(Response(f'Could not find image {image_name}', 404))
+    file_path = ''
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        file_path = f"{images_dir}/{project}/{f[image_name].attrs['path']}"
+
+        if not os.path.isfile(file_path):
+            abort(Response(f'Could not find image {image_name}', 404))
     return send_file(file_path)
 
 
-@app.route("/<project>/features/<image_name>")
+@bp.route("/<project>/features/<image_name>")
 def get_image_features(project, image_name):
     f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return jsonify(f[image_name]['features'][()].tolist())
+    features = jsonify(f[image_name]['features'][()].tolist())
+    f.close()
+    return features
 
 
-@app.route("/<project>/neighbours/<image_name>/<user>")
+@bp.route("/<project>/neighbours/<image_name>/<user>")
 def get_image_neighbours(project, image_name, user):
 
     image_list = []
     with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
         if image_name not in f:
             abort(Response(f'Could not find image {image_name}', 400))
-        
+
         for image in f[image_name][neighbours_group]:
-            temp_dict = {'filename': image, 
-                'distance': str(f[image_name][neighbours_group][image].attrs.get('distance'))}
+            temp_dict = {'filename': image,
+                         'distance': str(f[image_name][neighbours_group][image].attrs.get('distance'))}
             user_vote = f[image_name][neighbours_group][image].attrs.get(user)
             temp_dict['vote'] = str(user_vote) if user_vote else str(0)
             image_list.append(temp_dict)
-            
+
     image_list.sort(key=operator.itemgetter('distance'))
     respond = jsonify(image_list)
     app.logger.debug(f'Get request for user {user} and project {project}')
     return respond
 
 
-@app.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
+@bp.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
 def vote_image_for_username(project, image_name):
 
     try:
@@ -178,14 +187,16 @@ def read_uservote_request_body(req_body) -> Tuple[str, str, str]:
         raise ValueError('Not all data provided in request body')
     if int(content['vote']) != -1 and int(content['vote']) != 1:
         raise ValueError('Provide vote with value of either -1 or 1')
-    
+
     return content['user'], content['vote'], content['neighbour_image']
-    
+
+
 def load_model():
     global res_net
-    res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
+    res_net = keras.applications.resnet50.ResNet50(
+        include_top=False, pooling='avg')
 
-
+app.register_blueprint(bp, url_prefix='/api')
 if __name__ == '__main__':
     load_model()
     app.run(host='0.0.0.0')
