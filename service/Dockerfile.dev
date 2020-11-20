@@ -1,0 +1,41 @@
+FROM tensorflow/tensorflow:2.3.0
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r /tmp/requirements.txt
+
+RUN rm /tmp/requirements.txt
+
+EXPOSE 5000
+
+#add non root user to access locally data created in dev container 
+ARG USERNAME=michael
+RUN useradd -ms /bin/bash  $USERNAME -u 1000
+
+# store vscode extensions installed in vscode devcontainer
+RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
+        /home/$USERNAME/.vscode-server-insiders/extensions \
+    && chown -R $USERNAME \
+        /home/$USERNAME/.vscode-server \
+        /home/$USERNAME/.vscode-server-insiders
+#store bash history
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+    && echo $SNIPPET >> "/root/.bashrc" \
+    # [Optional] If you have a non-root user
+    && mkdir /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && chown -R $USERNAME /commandhistory \
+    && echo $SNIPPET >> "/home/$USERNAME/.bashrc" 
+
+USER $USERNAME
+
+
+#RUN mkdir /service
+#RUN mkdir /projects
+#COPY test_run.hdf5 /projects
+#COPY test_run.info /projects
+#COPY docker-entrypoint.sh /service
+#COPY main.py /service 
+WORKDIR /service
+ENTRYPOINT ["bash"]
+#ENTRYPOINT ["sh", "/service/docker-entrypoint.sh"]

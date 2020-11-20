@@ -1,0 +1,30 @@
+version: '3.5'
+
+services:
+  api:
+    build:
+      context: ./service
+      dockerfile: Dockerfile.dev
+    ports:
+      - '5001:5000'
+    volumes:
+
+    - ./service:/service
+    - ./projects:/projects
+    #- /home/michael/Desktop/binary_masks/images:/images/orig_image
+    #- /home/shohl/Bilder/idai_cloud_auswahl:/images/idai_cloud_auswahl
+    #- /home/michael/Desktop/binary_masks/masks:/images/mask_image
+    - /home/michael/Desktop/test_hdf5/:/images/test_run
+    - /home/michael/Desktop/ResultRecord/CVAT_seg_dataset/:/images/resnet_k40
+    #- /home/michael/Desktop/ResultRecord/CVAT_seg_dataset/:/images/fourier_k40
+
+    #vscode extensions
+    - ./vscode_remote/extensions/:/home/michael/.vscode-server/extensions/
+    - ./vscode_remote/insiders/:/home/michael/.vscode-server-insiders/extensions/
+    #vscode bash history
+    - ./vscode_remote/bashhistory:/commandhistory
+
+    user: 1000:1000
+    working_dir: /service
+    tty: true
+    restart: ${RESTART_POLICY}

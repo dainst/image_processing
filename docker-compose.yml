@@ -1,17 +1,20 @@
 version: '3.5'
 
 services:
-  flask:
-    container_name: image_processing_service
+  api:
+    image: dainst/image-processing-api
     build:
       context: ./service
     ports:
-      - "5001:5000"
+      - '5001:5000'
     volumes:
-      - ./service:/service
+    #- ./service:/service
       - ./projects:/projects
-      - /home/shohl/Bilder/preliminary:/images/max_haibt
-      - /home/shohl/Bilder/idai_cloud_auswahl:/images/idai_cloud_auswahl
-      - /home/shohl/Bilder/mask_images/masks:/images/mask_images
+   
     working_dir: /service
-    restart: ${RESTART_POLICY}
+  ui:
+    image: dainst/image-processing-ui
+    build:
+      context: ./frontend
+    ports:
+      - '8080:80'

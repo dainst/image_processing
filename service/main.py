@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, abort, Response
+from flask.blueprints import Blueprint
 from flask_cors import CORS
 
 import h5py
@@ -10,13 +11,16 @@ import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.resnet50 import preprocess_input
+from typing import List, Tuple
 from PIL import Image
 import base64
 import io
 from PIL.Image import DecompressionBombError
 from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
+import operator
 
 app = Flask('image_processing_service')
+bp = Blueprint('bp', __name__)
 cors = CORS(app)
 
 app.debug = True
@@ -24,11 +28,12 @@ res_net = None
 
 projects_dir = "/projects"
 images_dir = "/images"
+neighbours_group = 'neighbours'
 
 project_cache = {}
 
 
-@app.route('/')
+@bp.route('/')
 def index():
 
     available_projects = []
@@ -40,13 +45,16 @@ def index():
     return jsonify(available_projects)
 
 
-@app.route("/<project>")
+@bp.route("/<project>")
 def get_image_names(project):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return jsonify(list(f.keys()))
+    keys = None
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        keys = list(f.keys())
+
+    return jsonify(keys)
 
 
-@app.route('/<project>/upload', methods=['POST'])
+@bp.route('/<project>/upload', methods=['POST'])
 def upload(project):
     global res_net
     global project_cache
@@ -83,7 +91,7 @@ def upload(project):
 
     try:
         img = Image.open(io.BytesIO(file))
-    except Exception: # TODO: More explicit except
+    except Exception:  # todo: More explicit except
         img = Image.open(io.BytesIO(base64.b64decode(file)))
 
     img = img.convert('RGB')
@@ -98,7 +106,8 @@ def upload(project):
     app.logger.debug('Predicting nearest neighbours.')
     res_net_feature = res_net.predict(img_data)
     res_net_feature_flattened = np.array(res_net_feature).flatten()
-    res_net_feature_flattened = np.expand_dims(res_net_feature_flattened, axis=0)
+    res_net_feature_flattened = np.expand_dims(
+        res_net_feature_flattened, axis=0)
 
     nn = NearestNeighbors(n_neighbors=10)
     nn.fit(features_matrix)
@@ -111,39 +120,83 @@ def upload(project):
     return jsonify(result)
 
 
-@app.route("/<project>/<image_name>")
+@bp.route("/<project>/<image_name>")
 def get_image_data(project, image_name):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return send_file(f"{images_dir}/{project}/{f[image_name].attrs['path']}")
+    file_path = ''
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        file_path = f"{images_dir}/{project}/{f[image_name].attrs['path']}"
+
+        if not os.path.isfile(file_path):
+            abort(Response(f'Could not find image {image_name}', 404))
+    return send_file(file_path)
 
 
-@app.route("/<project>/features/<image_name>")
+@bp.route("/<project>/features/<image_name>")
 def get_image_features(project, image_name):
     f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
-    return jsonify(f[image_name]['features'][()].tolist())
+    features = jsonify(f[image_name]['features'][()].tolist())
+    f.close()
+    return features
 
 
-@app.route("/<project>/neighbours/<image_name>")
-def get_image_neighbours(project, image_name):
-    f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
+@bp.route("/<project>/neighbours/<image_name>/<user>")
+def get_image_neighbours(project, image_name, user):
 
-    result = []
-    for neighbour_name in f[image_name]['neighbours']:
-        result += [(
-            neighbour_name, float(f[image_name]['neighbours'][neighbour_name].attrs['distance'][()])
-        )]
+    image_list = []
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
+        if image_name not in f:
+            abort(Response(f'Could not find image {image_name}', 400))
 
-    result = sorted(result, key=lambda tup: tup[1])
-    app.logger.debug(result)
+        for image in f[image_name][neighbours_group]:
+            temp_dict = {'filename': image,
+                         'distance': str(f[image_name][neighbours_group][image].attrs.get('distance'))}
+            user_vote = f[image_name][neighbours_group][image].attrs.get(user)
+            temp_dict['vote'] = str(user_vote) if user_vote else str(0)
+            image_list.append(temp_dict)
 
-    return jsonify(result)
+    image_list.sort(key=operator.itemgetter('distance'))
+    respond = jsonify(image_list)
+    app.logger.debug(f'Get request for user {user} and project {project}')
+    return respond
+
+
+@bp.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
+def vote_image_for_username(project, image_name):
+
+    try:
+        username, vote, neighbour_image = read_uservote_request_body(request)
+    except ValueError as ve:
+        abort(Response(str(ve), 400))
+    except TypeError as te:
+        abort(Response(str(te), 400))
+
+    with h5py.File(f'{projects_dir}/{project}.hdf5', 'r+') as f:
+        neighbours = f[image_name].require_group(neighbours_group)
+        neighbour_img = neighbours.require_group(neighbour_image)
+        neighbour_img.attrs.modify(username, int(vote))
+
+    return jsonify(message="Added vote", body=request.json)
+
+
+def read_uservote_request_body(req_body) -> Tuple[str, str, str]:
+    """ Read user vote request body and return data if body has valid format """
+    if not req_body.is_json:
+        raise TypeError('No json file provided')
+    content = req_body.get_json()
+    if 'vote' not in content or 'neighbour_image' not in content or 'user' not in content:
+        raise ValueError('Not all data provided in request body')
+    if int(content['vote']) != -1 and int(content['vote']) != 1:
+        raise ValueError('Provide vote with value of either -1 or 1')
+
+    return content['user'], content['vote'], content['neighbour_image']
 
 
 def load_model():
     global res_net
-    res_net = keras.applications.resnet50.ResNet50(include_top=False, pooling='avg')
+    res_net = keras.applications.resnet50.ResNet50(
+        include_top=False, pooling='avg')
 
-
+app.register_blueprint(bp, url_prefix='/api')
 if __name__ == '__main__':
     load_model()
     app.run(host='0.0.0.0')
