@@ -3,8 +3,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY ./ .
-RUN npm install --save-dev eslint-plugin-prettier
-RUN npm install --save-dev --save-exact prettier
 RUN npm run build
 
 FROM nginx as production-stage
