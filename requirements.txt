@@ -4,3 +4,4 @@ Pillow
 h5py
 Flask
 flask-cors
+tqdm

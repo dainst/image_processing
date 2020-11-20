@@ -4,8 +4,12 @@ import argparse
 import logging
 import numpy as np
 import time
+import os
 
 from sklearn.neighbors import NearestNeighbors
+from tqdm import tqdm
+
+from global_directories import GloabalDir
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,11 +19,11 @@ logging.basicConfig(format="%(asctime)s-%(levelname)s-%(name)s - %(message)s")
 parser = argparse.ArgumentParser(description="Scan for images in the source directory.")
 parser.add_argument('project', type=str, help="Specifiy project name.")
 parser.add_argument('-k', '--k_nearest', type=int, default=20,
-                    help="keep k nearest neighbours for each image image, default: 20")
+                    help="keep k nearest neighbours for each image image, default: all. If given value is all: All images from dataset are compared")
 
 
-def create_neighbours(project_name, k):
-    f = h5py.File(f"./projects/{project_name}.hdf5", 'r+')
+def create_neighbours(project_name: str, _k: str) -> None:
+    f = h5py.File(f"{os.path.join(GloabalDir.projects,project_name)}.hdf5", 'r+')
 
     features_matrix = []
     image_name_to_id_mapping = {}
@@ -33,6 +37,8 @@ def create_neighbours(project_name, k):
 
     features_matrix = np.array(features_matrix)
 
+    k = len(features_matrix) -1 if _k == 'all' else int(_k)
+
     logger.info(f"Features shape for project '{project_name}': {str(features_matrix.shape)}")
     logger.info("Running KNN...")
     start_time = time.time()
@@ -41,22 +47,24 @@ def create_neighbours(project_name, k):
     logger.info(f"Done, time elapsed: {time.time() - start_time} seconds.")
 
     logger.info("Writing result to hdf5...")
-    for group_key in f:
-        current_image_id = image_name_to_id_mapping[group_key]
-        neighbour_names = [id_to_image_name_mapping[i] for i in neighbours[1][current_image_id]]
-        neighbour_distances = neighbours[0][current_image_id]
+    with tqdm(total=len(f)) as pbar:
+        for group_key in f:
+            current_image_id = image_name_to_id_mapping[group_key]
+            neighbour_names = [id_to_image_name_mapping[i] for i in neighbours[1][current_image_id]]
+            neighbour_distances = neighbours[0][current_image_id]
 
-        if 'neighbours' not in f[group_key]:
-            neighbours_group = f[group_key].create_group('neighbours')
-        else:
-            neighbours_group = f[group_key]['neighbours']
-
-        for idx, value in enumerate(neighbour_names):
-            if value not in neighbours_group:
-                g = neighbours_group.create_group(value)
-                g.attrs['distance'] = neighbour_distances[idx]
+            if 'neighbours' not in f[group_key]:
+                neighbours_group = f[group_key].create_group('neighbours')
             else:
-                neighbours_group[value].attrs['distance'] = neighbour_distances[idx]
+                neighbours_group = f[group_key]['neighbours']
+
+            for idx, value in enumerate(neighbour_names):
+                if value not in neighbours_group:
+                    g = neighbours_group.create_group(value)
+                    g.attrs['distance'] = neighbour_distances[idx]
+                else:
+                    neighbours_group[value].attrs['distance'] = neighbour_distances[idx]
+            pbar.update(1)
 
     logger.info("Done")
     f.close()
