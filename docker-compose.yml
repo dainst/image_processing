@@ -10,10 +10,6 @@ services:
     volumes:
       - ./projects:/projects
       - ${LOCAL_IMAGE_DIR}:/images
-    working_dir: /service
-#  ui:
-#    image: dainst/image-processing-ui
-#    build:
-#      context: ./frontend
-#    ports:
-#      - '8080:80'
+    working_dir: /service    
+    restart: ${RESTART_POLICY}
+
