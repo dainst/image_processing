@@ -6,15 +6,14 @@ services:
     build:
       context: ./service
     ports:
-      - '5001:5000'
+      - '5000:5000'
     volumes:
-    #- ./service:/service
       - ./projects:/projects
-   
+      - ${LOCAL_IMAGE_DIR}:/images
     working_dir: /service
-  ui:
-    image: dainst/image-processing-ui
-    build:
-      context: ./frontend
-    ports:
-      - '8080:80'
+#  ui:
+#    image: dainst/image-processing-ui
+#    build:
+#      context: ./frontend
+#    ports:
+#      - '8080:80'
