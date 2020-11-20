@@ -1,7 +1,6 @@
 import os
 
 from flask import Flask, jsonify, send_file, request, abort, Response
-from flask.blueprints import Blueprint
 from flask_cors import CORS
 
 import h5py
@@ -20,7 +19,6 @@ from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
 import operator
 
 app = Flask('image_processing_service')
-bp = Blueprint('bp', __name__)
 cors = CORS(app)
 
 app.debug = True
@@ -33,7 +31,7 @@ neighbours_group = 'neighbours'
 project_cache = {}
 
 
-@bp.route('/')
+@app.route('/')
 def index():
 
     available_projects = []
@@ -45,7 +43,7 @@ def index():
     return jsonify(available_projects)
 
 
-@bp.route("/<project>")
+@app.route("/<project>")
 def get_image_names(project):
     keys = None
     with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
@@ -54,7 +52,7 @@ def get_image_names(project):
     return jsonify(keys)
 
 
-@bp.route('/<project>/upload', methods=['POST'])
+@app.route('/<project>/upload', methods=['POST'])
 def upload(project):
     global res_net
     global project_cache
@@ -120,7 +118,7 @@ def upload(project):
     return jsonify(result)
 
 
-@bp.route("/<project>/<image_name>")
+@app.route("/<project>/<image_name>")
 def get_image_data(project, image_name):
     file_path = ''
     with h5py.File(f'{projects_dir}/{project}.hdf5', 'r') as f:
@@ -131,7 +129,7 @@ def get_image_data(project, image_name):
     return send_file(file_path)
 
 
-@bp.route("/<project>/features/<image_name>")
+@app.route("/<project>/features/<image_name>")
 def get_image_features(project, image_name):
     f = h5py.File(f'{projects_dir}/{project}.hdf5', 'r')
     features = jsonify(f[image_name]['features'][()].tolist())
@@ -139,7 +137,7 @@ def get_image_features(project, image_name):
     return features
 
 
-@bp.route("/<project>/neighbours/<image_name>/<user>")
+@app.route("/<project>/neighbours/<image_name>/<user>")
 def get_image_neighbours(project, image_name, user):
 
     image_list = []
@@ -160,7 +158,7 @@ def get_image_neighbours(project, image_name, user):
     return respond
 
 
-@bp.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
+@app.route("/<project>/neighbours/<image_name>/vote", methods=['POST'])
 def vote_image_for_username(project, image_name):
 
     try:
@@ -196,7 +194,6 @@ def load_model():
     res_net = keras.applications.resnet50.ResNet50(
         include_top=False, pooling='avg')
 
-app.register_blueprint(bp, url_prefix='/api')
 if __name__ == '__main__':
     load_model()
     app.run(host='0.0.0.0')
