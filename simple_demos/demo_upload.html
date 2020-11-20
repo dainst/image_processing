@@ -15,14 +15,13 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
           integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
           crossorigin="anonymous"></script>
-  <script src="drawing.js"></script>
-    <link rel="stylesheet" href="drawing.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
         integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
   <style type="text/css">
-    div#drawing-board {
+    img#main-image {
       height: 500px;
-      width: 700px;
+      width: auto;
     }
 
     img.neighbour {
@@ -32,50 +31,54 @@
 </head>
 
 <body>
+
 <div class="container-fluid">
-    <form class="drawing-form">
-        <div id="drawing-board"></div>
-        <input type="hidden" name="image" value="">
+    <form>
+      <label for="upload">Choose a picture:</label>
+      <input type="file" id="upload" name="upload" accept="image/*">
     </form>
+    <div class="row">
+        <img class="img-fluid card-img-top" id="main-image" src="">
+    </div>
   <br/>
   <div class="row">
    <div class="col-md-12">
-      <figure id="neighbour-1">
-          <img class="neighbour" src=""/>
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-2">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-3">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-4">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-5">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-6">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-7">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-8">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
-      <figure id="neighbour-9">
-          <img class="neighbour" src="">
-          <figcaption class="figure-caption"></figcaption>
-      </figure>
+       <figure id="neighbour-1">
+           <img class="neighbour" src=""/>
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-2">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-3">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-4">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-5">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-6">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-7">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-8">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
+       <figure id="neighbour-9">
+           <img class="neighbour" src="">
+           <figcaption class="figure-caption"></figcaption>
+       </figure>
    </div>
   </div>
 </div>
@@ -83,23 +86,21 @@
 
 <script typeof="text/javascript">
     const images = [];
-    // var basepath = 'data/'; // Deployment
-    const basepath = 'http://localhost:5001/'; // Development
+    const basepath = 'data/'; // Deployment
+    //const basepath = 'http://localhost:5001/'; // Development
 
-    //create the drawingboard by passing it the #id of the wanted container
-    const defaultBoard = new DrawingBoard.Board('drawing-board', {
-        background: "#000",
-        color: "#fff",
-        size: 30,
-    });
-    defaultBoard.ev.bind('board:stopDrawing', handleDrawing)
+    const mainImageElement = document.querySelector('#main-image');
+    const inputElement = document.getElementById("upload");
 
-    function handleDrawing() {
-        const boardData = defaultBoard.getImg();
+    inputElement.addEventListener("change", handleFiles, false);
 
-        var image = new FormData();
-        var blob = new Blob([boardData.replace("data:image/png;base64,", "")], { type: "image/png;base64"});
-        image.append('upload', blob);
+    function handleFiles() {
+        const image = inputElement.files[0];
+        const fr = new FileReader();
+        fr.onload = function () {
+            mainImageElement.src = fr.result;
+        }
+        fr.readAsDataURL(image);
 
         const xobj = new XMLHttpRequest();
         xobj.open("POST", flaskPath() + '/upload');
@@ -117,8 +118,9 @@
                 }
             }
         }
-        xobj.send(blob);
+        xobj.send(image);
     }
+
 
     function flaskPath() {
         const params = new URLSearchParams(window.location.search)
