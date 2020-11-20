@@ -76,7 +76,7 @@
 <script typeof="text/javascript">
     var images = [];
     var selectedImageIndex = -1;
-    var basepath = 'data/'; // Deployment
+    var basepath = '/data/'; // Deployment
     // var basepath = 'http://localhost:5001/api/'; // Development
     var hashRegex = /#(\d+)/;
 
@@ -103,7 +103,7 @@
 
         var xobj = new XMLHttpRequest();
         xobj.overrideMimeType('application/json');
-        xobj.open('GET', flaskPath() + '/neighbours/' + images[selectedImageIndex]);
+        xobj.open('GET', flaskPath() + '/neighbours/' + images[selectedImageIndex] + '/dummy_user');
         xobj.onreadystatechange = function () {
             if (xobj.readyState === 4 && xobj.status === 200) {
                 var neighbours = JSON.parse(xobj.responseText);
@@ -112,7 +112,7 @@
 
                 for (var i = 0; i < 9; i++) {
                     setImage(
-                        neighbours[i][0],
+                        neighbours[i]["filename"],
                         document.querySelector('#neighbour-' + String(i + 1))
                     );
                 }
